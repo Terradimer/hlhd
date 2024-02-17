@@ -1,8 +1,8 @@
-// Local Files
 mod collision_groups;
 mod input_handler;
 mod player_controller;
-mod world_gen;
+mod world_generation;
+mod animation;
 
 use input_handler::Inputs;
 
@@ -12,8 +12,7 @@ use bevy::{
     render::{settings::RenderCreation, *},
     window::*,
 };
-use bevy_ecs::schedule::NodeId::Set;
-use bevy_ecs::schedule::SystemSet;
+
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
 
@@ -25,8 +24,8 @@ fn main() {
                     primary_window: Some(Window {
                         title: "HardLight HyperDriver".to_string(),
                         resolution: WindowResolution::new(
-                            world_gen::WINDOW_WIDTH,
-                            world_gen::WINDOW_HEIGHT,
+                            world_generation::WINDOW_WIDTH,
+                            world_generation::WINDOW_HEIGHT,
                         ),
                         resizable: false,
                         ..Default::default()
@@ -40,18 +39,14 @@ fn main() {
                     }),
                 })
                 .set(ImagePlugin::default_nearest()), // this is just for the pixel art demo sprites
-            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.),
             RapierDebugRenderPlugin::default(),
             InputManagerPlugin::<Inputs>::default(),
-            player_controller::PlayerControllerPlugin
+            player_controller::PlayerControllerPlugin,
+            world_generation::WorldGenerationPlugin,
+            animation::AnimationPlugin,
         ))
         .init_resource::<ActionState<Inputs>>()
         .insert_resource(Inputs::input_map())
-        .add_systems(
-            Startup,
-            (world_gen::make_test_scene),
-        )
-
-        //.add_systems(Update, (movement_system.in)
         .run();
 }

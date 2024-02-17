@@ -1,16 +1,14 @@
+use bevy::a11y::accesskit::Role::Timer;
 use crate::input_handler::Inputs;
-use crate::player_controller::{components, resources};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::{action_state::ActionState, prelude::*, InputManagerBundle};
+use crate::animation::components::AnimationTimer;
 
-use self::resources::{PreviousState, PlayerState};
-use self::components::{
-    Player,
-    InAirData
-};
+use super::components::{InAirData, Player};
+use super::resources::{PlayerState, PreviousState};
 
-fn enter_in_air(
+pub fn enter_in_air(
     mut commands: Commands,
     player_query: Query<Entity, With<Player>>,
     prev_state: Res<PreviousState>,
