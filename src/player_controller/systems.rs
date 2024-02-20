@@ -1,9 +1,8 @@
 use bevy::{
     asset::LoadedFolder,
     prelude::*,
-    utils::HashMap,
+    render::texture::ImageSampler,
 };
-use bevy_ecs::bundle::DynamicBundle;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::{action_state::ActionState, InputManagerBundle, prelude::*};
 
@@ -12,29 +11,6 @@ use crate::animation::components::{Animation, AnimationIndices};
 use crate::input_handler::Inputs;
 
 use super::components::*;
-
-// pub fn enter_in_air(
-//     mut commands: Commands,
-//     mut q_player: Query<Entity, With<Player>>,
-//     mut q_player_sprite: Query<(&mut Animation, &mut PlayerAnimator)>,
-//     prev_state: Res<PreviousState>,
-// ) {
-//     let Ok(p_entity) = q_player.get_single_mut() else {
-//         return;
-//     };
-//     let Ok((mut p_animation, mut p_animator)) = q_player_sprite.get_single_mut() else {
-//         return;
-//     };
-//     p_animation.indicies = p_animator.animations[&PlayerState::InAir].indicies;
-//     match prev_state.state {
-//         Some(PlayerState::Grounded) => {
-//             commands
-//                 .entity(p_entity)
-//                 .insert(InAirData { coyote_time: 0.2 });
-//         }
-//         _ => {}
-//     };
-// }
 
 pub fn in_air(
     mut commands: Commands,
@@ -105,8 +81,8 @@ pub fn contact_detection_system(
 }
 
 pub fn movement_system(
-    mut q_player: Query<&mut Velocity, AnyOf<(&InAirState, &GroundedState)>>,
-    mut q_player_sprite: Query<&mut TextureAtlasSprite, With<PlayerIndexMap>>,
+    mut q_player: Query<&mut Velocity, Or<(With<InAirState>, With<GroundedState>)>>,
+    mut q_player_sprite: Query<&mut Sprite, With<PlayerIndexMap>>,
     input: Res<ActionState<Inputs>>,
 ) {
     let (Ok(mut vel), Ok(mut sprite)) =
@@ -115,7 +91,7 @@ pub fn movement_system(
             return;
         };
 
-    let x_axis = input.value(Inputs::Horizontal);
+    let x_axis = input.value(&Inputs::Horizontal);
     sprite.flip_x = if x_axis == 0. {
         sprite.flip_x
     } else {
@@ -133,30 +109,14 @@ pub fn spawn_player(
     mut commands: Commands,
     inputs: Res<ActionState<Inputs>>,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     sprite_handles: Res<animation::resources::PlayerSpriteFolder>,
     loaded_folders: Res<Assets<LoadedFolder>>,
     mut textures: ResMut<Assets<Image>>,
 ) {
-    let (animations, atlas) = load_player_sprites(asset_server, texture_atlases, sprite_handles, loaded_folders, textures);
-    let starting_animation = animations.falling.clone();
-
-    let player_sprite = commands
-        .spawn((
-            SpriteSheetBundle {
-                texture_atlas: atlas,
-                sprite: TextureAtlasSprite::new(starting_animation.indicies.first),
-                transform: Transform {
-                    translation: Vec3::Y * 45.,
-                    scale: Vec3::splat(1.75),
-                    ..default()
-                },
-                ..default()
-            },
-            starting_animation,
-            animations,
-        ))
-        .id();
+    let p_sprite_handler = commands.spawn(
+        load_player_sprites(asset_server, texture_atlas_layouts, sprite_handles, loaded_folders, textures)
+    ).id();
 
     commands
         .spawn((
@@ -178,7 +138,7 @@ pub fn spawn_player(
             Collider::cuboid(35. / 2., 60. / 2.),
             InheritedVisibility::default(),
         ))
-        .add_child(player_sprite);
+        .add_child(p_sprite_handler);
 }
 
 macro_rules! add_animation {
@@ -198,33 +158,33 @@ macro_rules! add_animation {
 
 fn load_player_sprites(
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     sprite_handles: Res<animation::resources::PlayerSpriteFolder>,
     loaded_folders: Res<Assets<LoadedFolder>>,
     mut textures: ResMut<Assets<Image>>,
-) -> (PlayerIndexMap, Handle<TextureAtlas>) {
-    let mut texture_atlas_builder = TextureAtlasBuilder::default();
+) -> (SpriteSheetBundle, Animation, PlayerIndexMap) {
     let loaded_folder = loaded_folders.get(&sprite_handles.handle).unwrap();
-    for handle in loaded_folder.handles.iter() {
-        let id = handle.id().typed_unchecked::<Image>();
-        let Some(texture) = textures.get(id) else {
-            warn!(
-                "{:?} did not resolve to an `Image` asset.",
-                handle.path().unwrap()
-            );
-            continue;
-        };
-        texture_atlas_builder.add_texture(id, texture);
-    }
 
-    let texture_atlas = texture_atlas_builder.finish(&mut textures).unwrap();
-
-    (
-        PlayerIndexMap {
-            idle: add_animation!("textures/demo_player/idle/1.png", 6, &asset_server, &texture_atlas),
-            falling: add_animation!("textures/demo_player/in_air/3.png", 0, &asset_server, &texture_atlas),
-            walk: add_animation!("textures/demo_player/walk/1.png", 7, &asset_server, &texture_atlas),
-        },
-        texture_atlases.add(texture_atlas)
-    )
+    let (layout, linear_texture) = animation::systems::create_texture_atlas(
+        loaded_folder,
+        None,
+        Some(ImageSampler::linear()),
+        &mut textures,
+    );
+    let animations = PlayerIndexMap {
+        idle: add_animation!("textures/demo_player/idle/1.png", 6, asset_server, layout),
+        falling: add_animation!("textures/demo_player/in_air/3.png", 0, asset_server, layout),
+        walk: add_animation!("textures/demo_player/walk/1.png", 7, asset_server, layout),
+    };
+    return (
+        animation::systems::create_sprite_from_atlas(
+            (0., 45., 0.),
+            1.75,
+            animations.falling.indicies.first,
+            texture_atlas_layouts.add(layout.clone()),
+            linear_texture,
+        ),
+        animations.falling.clone(),
+        animations,
+    );
 }

@@ -45,6 +45,7 @@ fn main() {
                         backends: Some(settings::Backends::DX12),
                         ..default()
                     }),
+                    ..default()
                 })
                 .set(ImagePlugin::default_nearest()), // this is just for the pixel art demo sprites
             FrameTimeDiagnosticsPlugin::default(),
@@ -58,6 +59,6 @@ fn main() {
         ))
         .init_resource::<ActionState<Inputs>>()
         .insert_resource(Inputs::input_map())
-        .add_state::<AppState>()
+        .init_state::<AppState>()
         .run();
 }
