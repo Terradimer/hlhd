@@ -6,7 +6,7 @@ pub struct AnimationIndices {
     pub last: usize,
 }
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct Animation {
     pub timer: Timer,
     pub indicies: AnimationIndices,

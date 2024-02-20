@@ -14,7 +14,6 @@ pub fn animate_sprite(
     for (mut animation, mut sprite) in &mut query {
         animation.timer.tick(time.delta());
         if animation.timer.just_finished() {
-            //println!("{:?}", animation.indicies);
             sprite.index = if animation.indicies.first <= sprite.index && sprite.index < animation.indicies.last {
                 sprite.index + 1
             } else {
