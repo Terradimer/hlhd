@@ -1,5 +1,4 @@
 use bevy::prelude::{Resource, States};
-use bevy_ecs::schedule::ScheduleLabel;
 
 #[derive(Resource)]
 pub struct PreviousState {
@@ -12,4 +11,5 @@ pub enum PlayerState {
     #[default]
     InAir,
     Jumping,
+    Idle,
 }

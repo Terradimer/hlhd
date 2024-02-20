@@ -1,20 +1,28 @@
+// External Crates
+use bevy::{
+    prelude::*,
+    render::{*, settings::RenderCreation},
+    window::*,
+};
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
+use bevy::diagnostic::LogDiagnosticsPlugin;
+use bevy_rapier2d::prelude::*;
+use leafwing_input_manager::prelude::*;
+
+use input_handler::Inputs;
+
 mod collision_groups;
 mod input_handler;
 mod player_controller;
 mod world_generation;
 mod animation;
 
-use input_handler::Inputs;
-
-// External Crates
-use bevy::{
-    prelude::*,
-    render::{settings::RenderCreation, *},
-    window::*,
-};
-
-use bevy_rapier2d::prelude::*;
-use leafwing_input_manager::prelude::*;
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
+enum AppState {
+    #[default]
+    Loading,
+    Loaded,
+}
 
 fn main() {
     App::new()
@@ -39,14 +47,17 @@ fn main() {
                     }),
                 })
                 .set(ImagePlugin::default_nearest()), // this is just for the pixel art demo sprites
+            FrameTimeDiagnosticsPlugin::default(),
+            LogDiagnosticsPlugin::default(),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.),
             RapierDebugRenderPlugin::default(),
             InputManagerPlugin::<Inputs>::default(),
+            animation::AnimationPlugin,
             player_controller::PlayerControllerPlugin,
             world_generation::WorldGenerationPlugin,
-            animation::AnimationPlugin,
         ))
         .init_resource::<ActionState<Inputs>>()
         .insert_resource(Inputs::input_map())
+        .add_state::<AppState>()
         .run();
 }

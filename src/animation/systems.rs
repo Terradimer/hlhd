@@ -1,47 +1,43 @@
-use bevy::prelude::*;
+use bevy::{asset::LoadedFolder, prelude::*};
 use bevy_ecs::prelude::Res;
-use super::components::{AnimationIndices, AnimationTimer};
+
+use crate::animation::components::Animation;
+use crate::animation::resources::*;
 
 pub fn animate_sprite(
     time: Res<Time>,
     mut query: Query<(
-        &AnimationIndices,
-        &mut AnimationTimer,
+        &mut Animation,
         &mut TextureAtlasSprite,
     )>,
 ) {
-    for (indices, mut timer, mut sprite) in &mut query {
-        timer.tick(time.delta());
-        if timer.just_finished() {
-            sprite.index = if sprite.index == indices.last {
-                indices.first
-            } else {
+    for (mut animation, mut sprite) in &mut query {
+        animation.timer.tick(time.delta());
+        if animation.timer.just_finished() {
+            //println!("{:?}", animation.indicies);
+            sprite.index = if animation.indicies.first <= sprite.index && sprite.index < animation.indicies.last {
                 sprite.index + 1
+            } else {
+                animation.indicies.first
             };
         }
     }
 }
 
-pub fn demo_setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+pub fn check_textures(
+    mut next_state: ResMut<NextState<super::AppState>>,
+    sprite_folder: ResMut<PlayerSpriteFolder>,
+    mut events: EventReader<AssetEvent<LoadedFolder>>,
 ) {
-    let texture_handle = asset_server.load("textures/demo_player/movement/walking.png");
-    let texture_atlas =
-        TextureAtlas::from_grid(texture_handle, Vec2::new(96.0, 84.0), 8, 1, None, None);
+    for event in events.read() {
+        if event.is_loaded_with_dependencies(&sprite_folder.handle) {
+            next_state.set(super::AppState::Loaded);
+        }
+    }
+}
 
-    let texture_atlas_handle = texture_atlases.add(texture_atlas);
-    // Use only the subset of sprites in the sheet that make up the run animation
-    let animation_indices = AnimationIndices { first: 0, last: 7 };
-    commands.spawn((
-        SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle,
-            sprite: TextureAtlasSprite::new(animation_indices.first),
-            transform: Transform::from_scale(Vec3::splat(1.5)),
-            ..default()
-        },
-        animation_indices,
-        AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
-    ));
+pub fn load_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.insert_resource(PlayerSpriteFolder {
+        handle: asset_server.load_folder("textures/demo_player")
+    });
 }
