@@ -1,21 +1,28 @@
-// Local Files
-mod collision_groups;
-mod input_handler;
-mod player_controller;
-mod world_gen;
-
-use input_handler::Inputs;
-
 // External Crates
 use bevy::{
     prelude::*,
-    render::{settings::RenderCreation, *},
+    render::{*, settings::RenderCreation},
     window::*,
 };
-use bevy_ecs::schedule::NodeId::Set;
-use bevy_ecs::schedule::SystemSet;
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
+use bevy::diagnostic::LogDiagnosticsPlugin;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
+
+use input_handler::Inputs;
+
+mod collision_groups;
+mod input_handler;
+mod player_controller;
+mod world_generation;
+mod animation;
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
+enum AppState {
+    #[default]
+    Loading,
+    Loaded,
+}
 
 fn main() {
     App::new()
@@ -25,8 +32,8 @@ fn main() {
                     primary_window: Some(Window {
                         title: "HardLight HyperDriver".to_string(),
                         resolution: WindowResolution::new(
-                            world_gen::WINDOW_WIDTH,
-                            world_gen::WINDOW_HEIGHT,
+                            world_generation::WINDOW_WIDTH,
+                            world_generation::WINDOW_HEIGHT,
                         ),
                         resizable: false,
                         ..Default::default()
@@ -38,20 +45,20 @@ fn main() {
                         backends: Some(settings::Backends::DX12),
                         ..default()
                     }),
+                    ..default()
                 })
                 .set(ImagePlugin::default_nearest()), // this is just for the pixel art demo sprites
-            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
+            FrameTimeDiagnosticsPlugin::default(),
+            LogDiagnosticsPlugin::default(),
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.),
             RapierDebugRenderPlugin::default(),
             InputManagerPlugin::<Inputs>::default(),
-            player_controller::PlayerControllerPlugin
+            animation::AnimationPlugin,
+            player_controller::PlayerControllerPlugin,
+            world_generation::WorldGenerationPlugin,
         ))
         .init_resource::<ActionState<Inputs>>()
         .insert_resource(Inputs::input_map())
-        .add_systems(
-            Startup,
-            (world_gen::make_test_scene),
-        )
-
-        //.add_systems(Update, (movement_system.in)
+        .init_state::<AppState>()
         .run();
 }

@@ -1,26 +1,37 @@
-use crate::player_controller::resources::PlayerState;
-use bevy::app::{App, Plugin, Startup, Update};
-use bevy_ecs::prelude::{in_state, IntoSystemConfigs};
+use bevy::app::{App, Plugin, Update};
+use bevy_ecs::prelude::{IntoSystemConfigs, OnEnter};
+
+use systems::*;
+
+use crate::AppState;
 
 mod components;
 mod resources;
 mod systems;
 
-const JUMP_VELOCITY: f32 = 500.0;
+const JUMP_SRENGTH: f32 = 500.0;
 const PLAYER_SPEED: f32 = 200.0;
 
 pub struct PlayerControllerPlugin;
 
+// Todo: Add the remaining state transitions and their behavior
+// Todo: Attach the sprite to the player and make a better system handling sprites
+
 impl Plugin for PlayerControllerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<PlayerState>()
-            .insert_resource(resources::PreviousState {
-                state: Some(resources::PlayerState::default()),
-            })
-            .add_systems(Startup, systems::spawn_player)
+        app
             .add_systems(
                 Update,
-                (systems::movement_system).run_if(in_state(PlayerState::InAir)),
-            );
+                (
+                    contact_detection_system, // 1st
+                    (
+                        movement_system,
+                        in_air,
+                        grounded
+                    ), // 2nd any order
+                ),
+                //.chain(),
+            )
+            .add_systems(OnEnter(AppState::Loaded), spawn_player);
     }
 }
