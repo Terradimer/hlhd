@@ -1,21 +1,17 @@
-use bevy::{asset::LoadedFolder, prelude::*};
 use bevy::render::texture::ImageSampler;
+use bevy::{asset::LoadedFolder, prelude::*};
 use bevy_ecs::prelude::Res;
 
 use crate::animation::components::Animation;
 use crate::animation::resources::*;
 
-pub fn animate_sprite(
-    time: Res<Time>,
-    mut query: Query<(
-        &mut Animation,
-        &mut TextureAtlas,
-    )>,
-) {
+pub fn animate_sprite(time: Res<Time>, mut query: Query<(&mut Animation, &mut TextureAtlas)>) {
     for (mut animation, mut sprite) in &mut query {
         animation.timer.tick(time.delta());
         if animation.timer.just_finished() {
-            sprite.index = if animation.indicies.first <= sprite.index && sprite.index < animation.indicies.last {
+            sprite.index = if animation.indicies.first <= sprite.index
+                && sprite.index < animation.indicies.last
+            {
                 sprite.index + 1
             } else {
                 animation.indicies.first
@@ -38,7 +34,7 @@ pub fn check_textures(
 
 pub fn load_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(PlayerSpriteFolder {
-        handle: asset_server.load_folder("textures/demo_player")
+        handle: asset_server.load_folder("textures/demo_player"),
     });
 }
 

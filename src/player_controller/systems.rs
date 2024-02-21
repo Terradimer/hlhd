@@ -1,14 +1,11 @@
-use bevy::{
-    asset::LoadedFolder,
-    prelude::*,
-    render::texture::ImageSampler,
-};
+use bevy::{asset::LoadedFolder, prelude::*, render::texture::ImageSampler};
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::{action_state::ActionState, InputManagerBundle, prelude::*};
 
 use crate::animation;
 use crate::animation::components::{Animation, AnimationIndices};
 use crate::input_handler::Inputs;
+use crate::macros::query_guard;
 
 use super::components::*;
 
@@ -19,12 +16,11 @@ pub fn in_air(
     input: Res<ActionState<Inputs>>,
     time: Res<Time>,
 ) {
-    let Ok((p_entity, contacts, vel, state)) = q_player.get_single_mut() else {
-        return;
-    };
+    let (p_entity, contacts, vel, state) = query_guard!(q_player.get_single_mut());
 
     if contacts.bottom {
-        commands.entity(p_entity)
+        commands
+            .entity(p_entity)
             .remove::<InAirState>()
             .insert(GroundedState);
     }
@@ -35,12 +31,8 @@ pub fn grounded(
     mut q_player: Query<(Entity, &ContactDirection, &Velocity), With<GroundedState>>,
     mut q_player_sprite: Query<(&PlayerIndexMap, &mut Animation)>,
 ) {
-    let Ok((p_entity, contacts, vel)) = q_player.get_single_mut() else {
-        return;
-    };
-    let Ok((index_map, mut animation)) = q_player_sprite.get_single_mut() else {
-        return;
-    };
+    let (p_entity, contacts, vel) = query_guard!(q_player.get_single_mut());
+    let (index_map, mut animation) = query_guard!(q_player_sprite.get_single_mut());
 
     if vel.linvel.x.abs() > 0. {
         animation.indicies = index_map.walk.indicies;
@@ -49,11 +41,10 @@ pub fn grounded(
     }
 
     if !contacts.bottom {
-        commands.entity(p_entity)
+        commands
+            .entity(p_entity)
             .remove::<GroundedState>()
-            .insert(InAirState {
-                coyote_time: 0.2
-            });
+            .insert(InAirState { coyote_time: 0.2 });
     }
 }
 
@@ -61,22 +52,19 @@ pub fn contact_detection_system(
     mut q_player: Query<(Entity, &mut ContactDirection), With<Player>>,
     rapier_context: Res<RapierContext>,
 ) {
-    let Ok((p_entity, mut contacts)) = q_player.get_single_mut() else {
-        return;
-    };
+    let (p_entity, mut contacts) = query_guard!(q_player.get_single_mut());
     *contacts = ContactDirection::default();
 
     for contact_pair in rapier_context.contact_pairs_with(p_entity) {
         for contact in contact_pair.manifolds() {
             let normal = contact.normal();
 
-            contacts.top = contacts.top || normal.y < 0.;
-            contacts.bottom = contacts.bottom || normal.y > 0.;
-            contacts.right = contacts.right || normal.x > 0.;
-            contacts.left = contacts.left || normal.x < 0.;
+            contacts.top |= normal.y < 0.;
+            contacts.bottom |= normal.y > 0.;
+            contacts.right |= normal.x > 0.;
+            contacts.left |= normal.x < 0.;
         }
     }
-    if contacts.bottom {}
     // println!("{:?}", contacts); // Debug
 }
 
@@ -92,18 +80,13 @@ pub fn movement_system(
         };
 
     let x_axis = input.value(&Inputs::Horizontal);
-    sprite.flip_x = if x_axis == 0. {
-        sprite.flip_x
-    } else {
-        x_axis < 0.
-    };
+    if x_axis != 0. {
+        sprite.flip_x = x_axis < 0.;
+    }
     vel.linvel.x = x_axis * super::PLAYER_SPEED;
 }
 
-fn jumping(
-    mut query: Query<(), With<Player>>,
-    time: Res<Time>,
-) {}
+fn jumping(mut query: Query<(), With<Player>>, time: Res<Time>) {}
 
 pub fn spawn_player(
     mut commands: Commands,
@@ -114,9 +97,15 @@ pub fn spawn_player(
     loaded_folders: Res<Assets<LoadedFolder>>,
     mut textures: ResMut<Assets<Image>>,
 ) {
-    let p_sprite_handler = commands.spawn(
-        load_player_sprites(asset_server, texture_atlas_layouts, sprite_handles, loaded_folders, textures)
-    ).id();
+    let p_sprite_handler = commands
+        .spawn(load_player_sprites(
+            asset_server,
+            texture_atlas_layouts,
+            sprite_handles,
+            loaded_folders,
+            textures,
+        ))
+        .id();
 
     commands
         .spawn((
@@ -141,21 +130,6 @@ pub fn spawn_player(
         .add_child(p_sprite_handler);
 }
 
-macro_rules! add_animation {
-    ($path:expr, $num_frames:expr, $asset_server:expr, $texture_atlas:expr) => {{
-        let handle = $asset_server.get_handle($path).unwrap();
-        let index = $texture_atlas.get_texture_index(&handle).unwrap();
-
-        Animation {
-            timer: Timer::from_seconds(0.1, TimerMode::Repeating),
-            indicies: AnimationIndices {
-                first: index,
-                last: index + $num_frames,
-            },
-        }
-    }}
-}
-
 fn load_player_sprites(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
@@ -172,9 +146,9 @@ fn load_player_sprites(
         &mut textures,
     );
     let animations = PlayerIndexMap {
-        idle: add_animation!("textures/demo_player/idle/1.png", 6, asset_server, layout),
-        falling: add_animation!("textures/demo_player/in_air/3.png", 0, asset_server, layout),
-        walk: add_animation!("textures/demo_player/walk/1.png", 7, asset_server, layout),
+        idle: animation::macros::add_animation!("textures/demo_player/idle/1.png", 6, asset_server, layout),
+        falling: animation::macros::add_animation!("textures/demo_player/in_air/3.png", 0, asset_server, layout),
+        walk: animation::macros::add_animation!("textures/demo_player/walk/1.png", 7, asset_server, layout),
     };
     return (
         animation::systems::create_sprite_from_atlas(

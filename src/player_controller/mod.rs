@@ -19,19 +19,14 @@ pub struct PlayerControllerPlugin;
 
 impl Plugin for PlayerControllerPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(
-                Update,
-                (
-                    contact_detection_system, // 1st
-                    (
-                        movement_system,
-                        in_air,
-                        grounded
-                    ), // 2nd any order
-                ),
-                //.chain(),
-            )
-            .add_systems(OnEnter(AppState::Loaded), spawn_player);
+        app.add_systems(
+            Update,
+            (
+                contact_detection_system,            // 1st
+                (movement_system, in_air, grounded), // 2nd any order
+            ),
+            //.chain(),
+        )
+        .add_systems(OnEnter(AppState::Loaded), spawn_player);
     }
 }

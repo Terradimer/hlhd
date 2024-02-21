@@ -1,9 +1,9 @@
-// External Crates
 use bevy::{
     prelude::*,
     render::{*, settings::RenderCreation},
     window::*,
 };
+// External Crates
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::diagnostic::LogDiagnosticsPlugin;
 use bevy_rapier2d::prelude::*;
@@ -11,11 +11,12 @@ use leafwing_input_manager::prelude::*;
 
 use input_handler::Inputs;
 
+mod animation;
 mod collision_groups;
 mod input_handler;
 mod player_controller;
 mod world_generation;
-mod animation;
+mod macros;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
 enum AppState {
