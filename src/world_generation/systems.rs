@@ -54,7 +54,7 @@ pub fn gen_platform(
         },
         RigidBody::Fixed,
         Collider::cuboid(0.5, 0.5),
-        crate::collision_groups::GroupsConfig::ground_group(),
+        crate::collision_groups::Groups::environment(),
         Friction::new(0.),
     )
 }

@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::{*, settings::RenderCreation},
+    render::{settings::RenderCreation, *},
     window::*,
 };
 // External Crates
@@ -14,9 +14,9 @@ use input_handler::Inputs;
 mod animation;
 mod collision_groups;
 mod input_handler;
+mod macros;
 mod player_controller;
 mod world_generation;
-mod macros;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
 enum AppState {

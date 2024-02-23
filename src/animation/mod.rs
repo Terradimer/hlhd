@@ -5,9 +5,9 @@ use bevy_ecs::prelude::{in_state, IntoSystemConfigs, OnEnter};
 use crate::AppState;
 
 pub mod components;
+pub mod macros;
 pub mod resources;
 pub mod systems;
-pub mod macros;
 
 pub struct AnimationPlugin;
 

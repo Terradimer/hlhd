@@ -1,6 +1,7 @@
-use bevy::prelude::Component;
+use bevy::prelude::{Component, Timer, TimerMode};
 
 use crate::animation::components::*;
+use crate::player_controller::COYOTE_TIME;
 
 #[derive(Component)]
 pub struct Player; // Tag component for the player
@@ -14,23 +15,33 @@ pub struct ContactDirection {
 }
 
 #[derive(Component)]
-pub struct PlayerIndexMap {
+pub struct PlayerAnimationMap {
     pub idle: Animation,
     pub falling: Animation,
+    pub rising: Animation,
+    pub peak: Animation,
     pub walk: Animation,
 }
 
 // States
 #[derive(Component)]
 #[component(storage = "SparseSet")]
-pub struct InAirState {
-    pub(crate) coyote_time: f32,
+pub struct InAir;
+
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct Grounded {
+    pub coyote_time: Timer,
+}
+
+impl Default for Grounded {
+    fn default() -> Self {
+        Grounded {
+            coyote_time: Timer::from_seconds(COYOTE_TIME, TimerMode::Once),
+        }
+    }
 }
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
-pub struct GroundedState;
-
-#[derive(Component)]
-#[component(storage = "SparseSet")]
-pub struct JumpingState;
+pub struct Jumping;

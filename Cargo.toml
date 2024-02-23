@@ -9,9 +9,7 @@ edition = "2021"
 bevy = "0.13.0"
 bevy_ecs = "0.13.0"
 bevy_rapier2d = "0.25.0"
-leafwing-input-manager = "0.13.0"
-serde = { version = "1.0.196", features = ["derive"] }
-bitflags = "2.4.2"
+leafwing-input-manager = "0.13.2"
 
 [profile.dev]
 opt-level = 1

@@ -9,8 +9,9 @@ mod components;
 mod resources;
 mod systems;
 
-const JUMP_SRENGTH: f32 = 500.0;
+const JUMP_SRENGTH: f32 = 100.0;
 const PLAYER_SPEED: f32 = 200.0;
+const COYOTE_TIME: f32 = 0.2;
 
 pub struct PlayerControllerPlugin;
 
@@ -22,8 +23,8 @@ impl Plugin for PlayerControllerPlugin {
         app.add_systems(
             Update,
             (
-                contact_detection_system,            // 1st
-                (movement_system, in_air, grounded), // 2nd any order
+                contact_detection_system,
+                (movement_system, in_air, grounded, jumping),
             ),
             //.chain(),
         )

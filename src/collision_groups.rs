@@ -1,32 +1,32 @@
 use bevy_rapier2d::geometry::{CollisionGroups, Group};
 
-pub struct GroupsConfig;
+pub struct Groups;
 
-impl GroupsConfig {
+impl Groups {
     pub const PLAYER: Group = Group::GROUP_1;
-    pub const GROUND: Group = Group::GROUP_2;
+    pub const ENVIRONMENT: Group = Group::GROUP_2;
     pub const KICKABLE: Group = Group::GROUP_3;
     pub const PROJECTILES: Group = Group::GROUP_4;
 
     // Helper methods to create collision groups for different entities
-    pub fn player_group() -> CollisionGroups {
+    pub fn player() -> CollisionGroups {
         CollisionGroups {
             memberships: Self::PLAYER,
-            filters: Self::GROUND,
-        } // Player interacts with ground
+            filters: Self::ENVIRONMENT,
+        }
     }
 
-    pub fn ground_group() -> CollisionGroups {
+    pub fn environment() -> CollisionGroups {
         CollisionGroups {
-            memberships: Self::GROUND,
+            memberships: Self::ENVIRONMENT,
             filters: Self::PLAYER | Self::PROJECTILES,
-        } // Ground interacts with player
+        }
     }
 
-    pub fn kickable_group() -> CollisionGroups {
+    pub fn kickable() -> CollisionGroups {
         CollisionGroups {
             memberships: Self::KICKABLE,
             filters: Self::PLAYER,
-        } // Kickable interacts with player
+        }
     }
 }
