@@ -17,13 +17,15 @@ const WINDOW_LEFT_X: f32 = WINDOW_WIDTH / -2.0;
 const COLOR_PLATFORM: Color = Color::rgb(0.75, 0.75, 0.75);
 
 const SNAP_SCALE: f32 = 10.;
-const EDGE_THRESHOLD: f32 = 0.2; // Edge detection sensitivity
+const EDGE_THRESHOLD: f32 = 0.2;
+const MIN_SCALE: f32 = 20.;
 
 pub struct WorldGenerationPlugin;
 
 impl Plugin for WorldGenerationPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, make_test_scene)
+        app
+            .add_systems(Startup, make_test_scene)
             .add_systems(
                 Update,
                 (

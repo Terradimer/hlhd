@@ -5,7 +5,6 @@ use bevy_ecs::prelude::{in_state, IntoSystemConfigs};
 use leafwing_input_manager::prelude::{ActionState, InputManagerPlugin};
 use systems::*;
 
-pub mod components;
 pub mod resources;
 mod systems;
 

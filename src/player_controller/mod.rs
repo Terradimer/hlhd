@@ -5,7 +5,7 @@ use systems::*;
 
 use crate::AppState;
 
-mod components;
+pub mod components;
 mod functions;
 mod systems;
 

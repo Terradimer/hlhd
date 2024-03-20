@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use leafwing_input_manager::action_state::ActionState;
 
-use crate::input::components::MainCamera;
+use crate::camera::components::MainCamera;
 use crate::input::resources::{Inputs, MousePosition};
 use crate::time::resources::ScaledTime;
 

@@ -3,22 +3,24 @@ use bevy::{
     render::{settings::RenderCreation, *},
     window::*,
 };
-// External Crates
-use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
+
 use bevy::diagnostic::LogDiagnosticsPlugin;
 use bevy_rapier2d::prelude::*;
-use leafwing_input_manager::action_state::ActionState;
-
-use crate::input::resources::Inputs;
+use crate::camera::CameraHandlerPlugin;
+use crate::input::InputHandlerPlugin;
+use crate::player_controller::PlayerControllerPlugin;
+use crate::animation::AnimationHandlerPlugin;
+use crate::time::TimeScalarPlugin;
+use crate::world_generation::WorldGenerationPlugin;
 
 mod animation;
 mod collision_groups;
-
 mod input;
 mod macros;
 mod player_controller;
 mod time;
 mod world_generation;
+mod camera;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
 enum AppState {
@@ -56,13 +58,16 @@ fn main() {
             //FrameTimeDiagnosticsPlugin::default(),
             LogDiagnosticsPlugin::default(),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.),
-            RapierDebugRenderPlugin::default(),
-            time::TimeScalarPlugin,
-            input::InputHandlerPlugin,
-            animation::AnimationPlugin,
-            player_controller::PlayerControllerPlugin,
-            world_generation::WorldGenerationPlugin,
+            RapierDebugRenderPlugin::disabled(Default::default()),
+            // Internal Crates
+            TimeScalarPlugin,
+            InputHandlerPlugin,
+            AnimationHandlerPlugin,
+            PlayerControllerPlugin,
+            WorldGenerationPlugin,
+            CameraHandlerPlugin
         ))
+        .insert_resource(DebugRenderContext { enabled: false, ..default() })
         .init_state::<AppState>()
         .run();
 }

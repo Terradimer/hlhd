@@ -8,6 +8,7 @@ use crate::input::resources::Inputs;
 use crate::macros::{change_state, on_enter, query_guard, Init};
 use crate::player_controller::functions::load_player_sprites;
 use crate::player_controller::JUMP_STRENGTH;
+use crate::world_generation::components::Draggable;
 
 use super::components::*;
 
@@ -115,7 +116,6 @@ pub fn contact_detection(
 ) {
     let (p_entity, mut contacts) = query_guard!(q_player.get_single_mut());
     *contacts = ContactDirection::default();
-    //rapier_context.contact_pairs_with(p_entity).filter(|pair| pair.raw.collider2.)
 
     for contact_pair in rapier_context.contact_pairs_with(p_entity) {
         for contact in contact_pair.manifolds() {
@@ -140,6 +140,7 @@ pub fn spawn_player(
     let player_base = commands
         .spawn((
             Player,
+            Draggable,
             TransformBundle::from_transform(Transform::from_xyz(0., -50., 0.)),
             InputManagerBundle {
                 input_map: Inputs::input_map(),
@@ -174,7 +175,7 @@ pub fn spawn_player(
         ContactDirection::default(),
         Ccd { enabled: true },
         Friction::new(0.),
-        Collider::cuboid(35. / 2., 60. / 2.),
+        Collider::cuboid(35. / 2., 60.  / 2.),
         CollisionGroups {
             memberships: crate::collision_groups::Groups::PLAYER,
             filters: crate::collision_groups::Groups::ENVIRONMENT,

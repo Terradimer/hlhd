@@ -4,20 +4,20 @@ use bevy::{
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 
-use crate::input::components::MainCamera;
+use crate::camera::components::MainCamera;
 use crate::input::resources::{Inputs, MousePosition};
-use crate::world_generation::components::{DevInteractable, Dragging, Edges, Resizing};
+use crate::world_generation::components::{Draggable, Dragging, Resizing, Scalable};
 use crate::world_generation::functions::detect_edge;
 
 use super::{
-    COLOR_PLATFORM, SNAP_SCALE, WINDOW_BOTTOM_Y, WINDOW_HEIGHT, WINDOW_LEFT_X, WINDOW_WIDTH,
+    COLOR_PLATFORM, SNAP_SCALE, MIN_SCALE, WINDOW_BOTTOM_Y, WINDOW_HEIGHT, WINDOW_LEFT_X, WINDOW_WIDTH,
 };
 
 pub fn update_dev_entities(
     mut commands: Commands,
     mouse_position: Res<MousePosition>,
     rapier_context: Res<RapierContext>,
-    mut q_interactable: Query<&mut Transform, (With<DevInteractable>, Without<Dragging>)>,
+    mut q_interactable: Query<(&Transform, Has<Draggable>, Has<Scalable>), Or<(With<Draggable>, With<Scalable>)>>,
     input: Res<ActionState<Inputs>>,
 ) {
     if !input.just_pressed(&Inputs::Shoot) {
@@ -27,19 +27,23 @@ pub fn update_dev_entities(
         mouse_position.position,
         QueryFilter::default(),
         |entity| {
-            if let Ok(mut transform) = q_interactable.get_mut(entity) {
-                let edge = detect_edge(&transform, mouse_position.position);
+            if let Ok((transform, draggable, scalable)) = q_interactable.get_mut(entity) {
+                if scalable {
+                    let edge = detect_edge(&transform, mouse_position.position);
 
-                if let Some(edge) = edge {
-                    commands.entity(entity).insert(Resizing {
-                        origin: transform.translation.truncate()
-                            + Vec2::new(
-                            (transform.scale.x / 2.0) * -(edge.vertical as i32 as f32),
-                            (transform.scale.y / 2.0) * -(edge.horizontal as i32 as f32),
+                    if let Some(edge) = edge {
+                        commands.entity(entity).insert(Resizing {
+                            origin: transform.translation.truncate()
+                                + Vec2::new(
+                                (transform.scale.x / 2.0) * -(edge.vertical as i32 as f32),
+                                (transform.scale.y / 2.0) * -(edge.horizontal as i32 as f32),
                             ),
-                        edges: edge,
-                    });
-                } else {
+                            edges: edge,
+                        });
+                        return false;
+                    }
+                }
+                if draggable {
                     commands.entity(entity).insert(Dragging {
                         offset: mouse_position.position - transform.translation.truncate(),
                     });
@@ -96,26 +100,35 @@ pub fn scale_dev_entities(
     for (mut transform, scaling) in q_scaling.iter_mut() {
         let origin = scaling.origin;
         let diff = ((mouse_position.position - scaling.origin) / SNAP_SCALE).round() * SNAP_SCALE;
+
+        let new_scale_x = diff.x.abs();
+        let new_scale_y = diff.y.abs();
+        let new_scale = diff.abs().extend(0.);
+
         match (scaling.edges.vertical, scaling.edges.horizontal) {
             (_, 0) => {
-                transform.scale.x = diff.x.abs();
-                transform.translation.x = origin.x + diff.x / 2.;
+                if new_scale_x > MIN_SCALE {
+                    transform.scale.x = new_scale_x;
+                    transform.translation.x = origin.x + diff.x / 2.;
+                }
             }
             (0, _) => {
-                transform.scale.y = diff.y.abs();
-                transform.translation.y = origin.y + diff.y / 2.;
+                if new_scale_y > MIN_SCALE {
+                    transform.scale.y = new_scale_y;
+                    transform.translation.y = origin.y + diff.y / 2.;
+                }
             }
             _ => {
-                transform.scale = diff.abs().extend(0.);
-                transform.translation = (origin + diff / 2.).extend(0.);
+                if new_scale.x > MIN_SCALE && new_scale.y > MIN_SCALE { // Check both components
+                    transform.scale = new_scale;
+                    transform.translation = (origin + diff / 2.).extend(0.);
+                }
             }
         };
     }
 }
 
 pub fn make_test_scene(mut commands: Commands) {
-    commands.spawn((Camera2dBundle::default(), MainCamera));
-
     commands.spawn(gen_platform(
         Vec3::new(0., WINDOW_BOTTOM_Y, 0.),
         Vec3::new(WINDOW_WIDTH, 50., 1.),
@@ -147,7 +160,8 @@ pub fn gen_platform(
     _scale: Vec3,
 ) -> (
     SpriteBundle,
-    DevInteractable,
+    Scalable,
+    Draggable,
     RigidBody,
     Collider,
     CollisionGroups,
@@ -166,7 +180,8 @@ pub fn gen_platform(
             },
             ..Default::default()
         },
-        DevInteractable,
+        Scalable,
+        Draggable,
         RigidBody::Fixed,
         Collider::cuboid(0.5, 0.5),
         crate::collision_groups::Groups::environment(),

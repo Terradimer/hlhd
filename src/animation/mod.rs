@@ -6,13 +6,12 @@ use crate::AppState;
 
 pub(crate) mod components;
 pub(crate) mod functions;
-pub(crate) mod macros;
 pub(crate) mod resources;
 pub(crate) mod systems;
 
-pub struct AnimationPlugin;
+pub struct AnimationHandlerPlugin;
 
-impl Plugin for AnimationPlugin {
+impl Plugin for AnimationHandlerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AppState::Loading), systems::load_textures)
             .add_systems(

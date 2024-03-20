@@ -58,7 +58,7 @@ pub(crate) fn load_player_sprites(
     };
     (
         create_sprite_from_atlas(
-            (0., 45., 0.),
+            (0., 43., 0.),
             1.75,
             animations.falling.indices.first,
             texture_atlas_layouts.add(layout),

@@ -3,8 +3,8 @@ use crate::world_generation::EDGE_THRESHOLD;
 use bevy::prelude::*;
 
 pub fn detect_edge(transform: &Transform, mouse_position: Vec2) -> Option<Edges> {
-    let edge_threshold_x = transform.scale.x * EDGE_THRESHOLD;
-    let edge_threshold_y = transform.scale.y * EDGE_THRESHOLD;
+    let edge_threshold_x = (transform.scale.x * EDGE_THRESHOLD).min(20.);
+    let edge_threshold_y = (transform.scale.y * EDGE_THRESHOLD).min(20.);
 
     let min_x = transform.translation.x - transform.scale.x / 2.0;
     let max_x = transform.translation.x + transform.scale.x / 2.0;

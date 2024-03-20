@@ -1,7 +1,6 @@
 use bevy::app::{App, Plugin, Update};
 use std::time::Duration;
 
-mod component;
 pub mod resources;
 mod systems;
 
