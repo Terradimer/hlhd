@@ -1,7 +1,7 @@
 use crate::world_generation::ui::components::SaveLevelButtonTag;
 use bevy::prelude::*;
 use bevy_ecs::prelude::*;
-use bevy_egui::egui::Rounding;
+use bevy_egui::{egui, EguiContexts};
 
 pub fn setup_dev_button(mut commands: Commands) {
     let button_style = Style {
@@ -60,4 +60,15 @@ pub fn save_level_on_click(
             }
         }
     }
+}
+
+pub fn egui_ui_test(mut contexts: EguiContexts) {
+    egui::Area::new("save button").fixed_pos((0.0, 0.0)).show(contexts.ctx_mut(), |ui| {
+        for (_text_style, font_id) in ui.style_mut().text_styles.iter_mut() {
+            font_id.size = 48.0 // whatever size you want here
+        }
+        if ui.button("Save").clicked() {
+            crate::world_generation::ui::functions::save_level();
+        }
+    });
 }
