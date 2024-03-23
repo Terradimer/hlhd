@@ -1,9 +1,16 @@
-use crate::world_generation::ui::components::SaveLevelButtonTag;
-use bevy::prelude::*;
+use crate::{
+    input::resources::Inputs,
+    world_generation::{
+        events::{LoadRoomEvent, SaveRoomEvent},
+        ui::components::DebugButton,
+    },
+};
+use bevy::{core_pipeline::core_2d::graph::input, prelude::*, utils::tracing::event};
 use bevy_ecs::prelude::*;
-use bevy_egui::egui::Rounding;
+use leafwing_input_manager::action_state::ActionState;
+use rfd::FileDialog;
 
-pub fn setup_dev_button(mut commands: Commands) {
+pub fn setup_buttons(mut commands: Commands) {
     let button_style = Style {
         width: Val::Px(150.0),
         height: Val::Px(65.0),
@@ -16,12 +23,12 @@ pub fn setup_dev_button(mut commands: Commands) {
     commands
         .spawn((
             ButtonBundle {
-                style: button_style,
+                style: button_style.clone(),
                 background_color: BackgroundColor::from(Color::BLACK.with_a(0.4)),
                 border_color: BorderColor::from(Color::BLACK.with_a(0.5)),
                 ..default()
             },
-            SaveLevelButtonTag,
+            DebugButton::Save,
         ))
         .with_children(|parent| {
             parent.spawn(TextBundle::from_section(
@@ -33,9 +40,30 @@ pub fn setup_dev_button(mut commands: Commands) {
                 },
             ));
         });
+
+    commands
+        .spawn((
+            ButtonBundle {
+                style: button_style,
+                background_color: BackgroundColor::from(Color::BLACK.with_a(0.4)),
+                border_color: BorderColor::from(Color::BLACK.with_a(0.5)),
+                ..default()
+            },
+            DebugButton::Load,
+        ))
+        .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+                "Load Level",
+                TextStyle {
+                    font_size: 20.0,
+                    color: Color::rgb(0.9, 0.9, 0.9),
+                    ..default()
+                },
+            ));
+        });
 }
 
-pub fn cleanup_dev_button(mut commands: Commands, query: Query<Entity, With<SaveLevelButtonTag>>) {
+pub fn cleanup_dev_buttons(mut commands: Commands, query: Query<Entity, With<DebugButton>>) {
     for entity in &query {
         commands.entity(entity).despawn_recursive();
     }
@@ -43,11 +71,13 @@ pub fn cleanup_dev_button(mut commands: Commands, query: Query<Entity, With<Save
 
 pub fn save_level_on_click(
     mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor),
-        (Changed<Interaction>, With<SaveLevelButtonTag>),
+        (&Interaction, &mut BackgroundColor, &DebugButton),
+        Changed<Interaction>,
     >,
+    mut ev_savelevel: EventWriter<SaveRoomEvent>,
+    mut ev_loadlevel: EventWriter<LoadRoomEvent>,
 ) {
-    for (interaction, mut color) in interaction_query.iter_mut() {
+    for (interaction, mut color, event) in interaction_query.iter_mut() {
         match *interaction {
             Interaction::None => {
                 *color = BackgroundColor::from(Color::BLACK.with_a(0.4));
@@ -55,9 +85,18 @@ pub fn save_level_on_click(
             Interaction::Hovered => {
                 *color = BackgroundColor::from(Color::GRAY.with_a(0.4));
             }
-            Interaction::Pressed => {
-                crate::world_generation::ui::functions::save_level();
-            }
+            Interaction::Pressed => match event {
+                DebugButton::Save => {
+                    ev_savelevel.send(SaveRoomEvent);
+                }
+                DebugButton::Load => {
+                    let load_path = FileDialog::new()
+                        .add_filter("RON file", &["ron"])
+                        .pick_file();
+
+                    ev_loadlevel.send(LoadRoomEvent { path: load_path });
+                }
+            },
         }
     }
 }

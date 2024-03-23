@@ -7,6 +7,7 @@ impl Groups {
     pub const ENVIRONMENT: Group = Group::GROUP_2;
     pub const KICKABLE: Group = Group::GROUP_3;
     pub const PROJECTILES: Group = Group::GROUP_4;
+    pub const NONE: Group = Group::empty();
 
     // Helper methods to create collision groups for different entities
     pub fn player() -> CollisionGroups {

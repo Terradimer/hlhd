@@ -175,7 +175,7 @@ pub fn spawn_player(
         ContactDirection::default(),
         Ccd { enabled: true },
         Friction::new(0.),
-        Collider::cuboid(35. / 2., 60.  / 2.),
+        Collider::cuboid(35. / 2., 60. / 2.),
         CollisionGroups {
             memberships: crate::collision_groups::Groups::PLAYER,
             filters: crate::collision_groups::Groups::ENVIRONMENT,
