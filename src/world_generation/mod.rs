@@ -4,11 +4,14 @@ use bevy_ecs::prelude::IntoSystemConfigs;
 use leafwing_input_manager::action_state::ActionState;
 
 use crate::input::resources::Inputs;
+use crate::camera::systems::update_cam_bounds;
 use crate::world_generation::ui::WorldGenUIPlugin;
 use crate::AppState;
 use systems::*;
 
 use self::components::Focused;
+
+use self::events::{LoadRoomEvent, SaveRoomEvent};
 pub(crate) mod components;
 mod functions;
 mod systems;
@@ -28,12 +31,12 @@ pub struct WorldGenerationPlugin;
 
 impl Plugin for WorldGenerationPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(Startup, make_test_scene)
+        app.add_systems(Startup, (make_test_scene, update_cam_bounds).chain())
             .add_systems(
                 Update,
                 (
                     (|mut commands: Commands, input: Res<ActionState<Inputs>>, query: Query<Entity, With<Focused>>|{if input.just_pressed(&Inputs::Shoot) {for entity in query.iter(){commands.entity(entity).remove::<Focused>();}}}).run_if(in_state(AppState::Dev)),
+                    (save_room, load_room),
                     update_dev_entities.run_if(in_state(AppState::Dev)),
                     (
                         scale_dev_entities.run_if(in_state(AppState::Dev)),
@@ -42,6 +45,8 @@ impl Plugin for WorldGenerationPlugin {
                 )
                     .chain(),
             )
-            .add_plugins(WorldGenUIPlugin);
+            .add_plugins(WorldGenUIPlugin)
+            .add_event::<SaveRoomEvent>()
+            .add_event::<LoadRoomEvent>();
     }
 }

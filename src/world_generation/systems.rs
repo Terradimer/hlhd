@@ -1,6 +1,25 @@
-use bevy::prelude::*;
+use super::{
+    components::*,
+    events::{LoadRoomEvent, SaveRoomEvent},
+    functions::*,
+    MIN_SCALE, SNAP_SCALE, WINDOW_BOTTOM_Y, WINDOW_HEIGHT, WINDOW_LEFT_X, WINDOW_WIDTH,
+};
+use crate::input::resources::{Inputs, MousePosition};
+use bevy::{
+    math::vec3,
+    prelude::*,
+    scene::ron::{
+        self, from_str,
+        ser::{to_string_pretty, PrettyConfig},
+    },
+    tasks::IoTaskPool,
+    utils::warn,
+};
+use bevy_ecs::{query, world};
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
+use rfd::FileDialog;
+use std::{fs::File, io::Write};
 
 // use crate::camera::components::MainCamera;
 use crate::input::resources::{Inputs, MousePosition};
@@ -15,8 +34,10 @@ pub fn update_dev_entities(
     mut commands: Commands,
     mouse_position: Res<MousePosition>,
     rapier_context: Res<RapierContext>,
-    mut q_interactable: Query<(&Transform, Has<Draggable>, Has<Scalable>), Or<(With<Draggable>, With<Scalable>)>>,
-    q_focused: Query<Entity, With<Focused>>,
+    mut q_interactable: Query<
+        (&Transform, Has<Draggable>, Has<Scalable>),
+        Or<(With<Draggable>, With<Scalable>)>,
+    >,
     input: Res<ActionState<Inputs>>,
 ) {
     if !input.just_pressed(&Inputs::Shoot) {
@@ -34,11 +55,10 @@ pub fn update_dev_entities(
                         commands.entity(entity).insert(Focused);
                         commands.entity(entity).insert(Resizing {
                             origin: transform.translation.truncate()
-                            //     + Vec2::new(
-                            //     (transform.scale.x / 2.0) * -(edge.vertical as i32 as f32),
-                            //     (transform.scale.y / 2.0) * -(edge.horizontal as i32 as f32),
-                            // )
-                            ,
+                                + Vec2::new(
+                                    (transform.scale.x / 2.0) * -(edge.vertical as i32 as f32),
+                                    (transform.scale.y / 2.0) * -(edge.horizontal as i32 as f32),
+                                ),
                             edges: edge,
                         });
                         return false;
@@ -75,9 +95,10 @@ pub fn dragging_env_entities(
     }
 
     for (mut transform, dragging) in q_dragging.iter_mut() {
+        let z = transform.translation.z;
         transform.translation =
             (((mouse_position.position - dragging.offset) / SNAP_SCALE).round() * SNAP_SCALE)
-                .extend(0.);
+                .extend(z);
     }
 }
 
@@ -103,90 +124,96 @@ pub fn scale_dev_entities(
         let origin = scaling.origin;
         let diff = ((mouse_position.position - scaling.origin) / SNAP_SCALE).round() * SNAP_SCALE;
 
-        let new_scale_x = diff.x.abs();
-        let new_scale_y = diff.y.abs();
         let new_scale = diff.abs().extend(0.);
 
         match (scaling.edges.vertical, scaling.edges.horizontal) {
             (_, 0) => {
-                if new_scale_x > MIN_SCALE {
-                    transform.scale.x = new_scale_x;
+                if new_scale.x > MIN_SCALE {
+                    transform.scale.x = new_scale.x;
                     transform.translation.x = origin.x + diff.x / 2.;
                 }
             }
             (0, _) => {
-                if new_scale_y > MIN_SCALE {
-                    transform.scale.y = new_scale_y;
+                if new_scale.y > MIN_SCALE {
+                    transform.scale.y = new_scale.y;
                     transform.translation.y = origin.y + diff.y / 2.;
                 }
             }
             _ => {
-                if new_scale.x > MIN_SCALE && new_scale.y > MIN_SCALE { // Check both components
+                if new_scale.x > MIN_SCALE && new_scale.y > MIN_SCALE {
+                    // Check both components
                     transform.scale = new_scale;
-                    transform.translation = (origin + diff / 2.).extend(0.);
+                    let z = transform.translation.z;
+                    transform.translation = (origin + diff / 2.).extend(z);
                 }
             }
         };
     }
 }
 
-pub fn make_test_scene(mut commands: Commands) {
-    commands.spawn(gen_platform(
-        Vec3::new(0., WINDOW_BOTTOM_Y, 0.),
-        Vec3::new(WINDOW_WIDTH, 50., 1.),
-    ));
-    commands.spawn(gen_platform(
-        Vec3::new(WINDOW_LEFT_X, 0., 0.),
-        Vec3::new(25., WINDOW_HEIGHT, 1.),
-    ));
-    commands.spawn(gen_platform(
-        Vec3::new(-WINDOW_LEFT_X, 0., 0.),
-        Vec3::new(25., WINDOW_HEIGHT, 1.),
-    ));
-    commands.spawn(gen_platform(
-        Vec3::new(-250., WINDOW_BOTTOM_Y + 150., 0.),
-        Vec3::new(300., 30., 1.),
-    ));
-    commands.spawn(gen_platform(
-        Vec3::new(250., WINDOW_BOTTOM_Y + 150., 0.),
-        Vec3::new(300., 30., 1.),
-    ));
-    commands.spawn(gen_platform(
-        Vec3::new(0., 40., 0.),
-        Vec3::new(250., 30., 1.),
-    ));
+pub fn make_test_scene(mut ev_loadcall: EventWriter<LoadRoomEvent>) {
+    let load_path = FileDialog::new()
+        .add_filter("RON file", &["ron"])
+        .pick_file();
+
+    ev_loadcall.send(LoadRoomEvent { path: load_path });
 }
 
-pub fn gen_platform(
-    _translation: Vec3,
-    _scale: Vec3,
-) -> (
-    SpriteBundle,
-    Scalable,
-    Draggable,
-    RigidBody,
-    Collider,
-    CollisionGroups,
-    Friction,
+pub fn save_room(
+    mut ev_savecall: EventReader<SaveRoomEvent>,
+    q_saveable: Query<(Entity, &Transform), With<Saveable>>,
 ) {
-    (
-        SpriteBundle {
-            sprite: Sprite {
-                color: COLOR_PLATFORM,
-                ..Default::default()
-            },
-            transform: Transform {
-                translation: _translation,
-                scale: _scale,
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-        Scalable,
-        Draggable,
-        RigidBody::Fixed,
-        Collider::cuboid(0.5, 0.5),
-        crate::collision_groups::Groups::environment(),
-        Friction::new(0.),
-    )
+    if ev_savecall.is_empty() {
+        return;
+    }
+
+    let save_path = FileDialog::new()
+        .add_filter("RON file", &["ron"])
+        .save_file();
+
+    if let Some(path) = save_path {
+        let mut entity_data: Vec<EntityData> = Vec::new();
+
+        for (_, transform) in q_saveable.iter() {
+            entity_data.push(EntityData {
+                position: transform.translation,
+                scale: transform.scale,
+            });
+        }
+
+        let mut data = std::collections::HashMap::new();
+        data.insert("platforms", entity_data);
+
+        let pretty_config = PrettyConfig::new();
+        let ron_string = to_string_pretty(&data, pretty_config).expect("Failed to serialize data");
+
+        std::fs::write(path, ron_string).expect("Failed to write to file");
+    }
+
+    ev_savecall.clear()
+}
+
+pub fn load_room(mut commands: Commands, mut ev_loadcall: EventReader<LoadRoomEvent>) {
+    if ev_loadcall.is_empty() {
+        return;
+    }
+
+    let load_path = &ev_loadcall.read().next().unwrap().path;
+
+    if let Some(path) = load_path {
+        let file_contents = std::fs::read_to_string(path).expect("Failed to read file");
+
+        let data: std::collections::HashMap<String, Vec<EntityData>> =
+            from_str(&file_contents).expect("Failed to deserialize RON data");
+
+        if let Some(platforms) = data.get("platforms") {
+            for platform in platforms {
+                commands.spawn(gen_platform(platform.position, platform.scale));
+            }
+        } else {
+            println!("No 'platforms' data found in the file");
+        }
+    }
+
+    ev_loadcall.clear()
 }

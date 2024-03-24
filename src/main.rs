@@ -4,23 +4,23 @@ use bevy::{
     window::*,
 };
 
-use bevy::diagnostic::LogDiagnosticsPlugin;
-use bevy_rapier2d::prelude::*;
+use crate::animation::AnimationHandlerPlugin;
 use crate::camera::CameraHandlerPlugin;
 use crate::input::InputHandlerPlugin;
 use crate::player_controller::PlayerControllerPlugin;
-use crate::animation::AnimationHandlerPlugin;
 use crate::time::TimeScalarPlugin;
 use crate::world_generation::WorldGenerationPlugin;
+use bevy::diagnostic::LogDiagnosticsPlugin;
+use bevy_rapier2d::prelude::*;
 
 mod animation;
+mod camera;
 mod collision_groups;
 mod input;
 mod macros;
 mod player_controller;
 mod time;
 mod world_generation;
-mod camera;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
 enum AppState {
@@ -65,9 +65,12 @@ fn main() {
             AnimationHandlerPlugin,
             PlayerControllerPlugin,
             WorldGenerationPlugin,
-            CameraHandlerPlugin
+            CameraHandlerPlugin,
         ))
-        .insert_resource(DebugRenderContext { enabled: false, ..default() })
+        .insert_resource(DebugRenderContext {
+            enabled: false,
+            ..default()
+        })
         .init_state::<AppState>()
         .run();
 }

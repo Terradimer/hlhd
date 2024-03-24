@@ -1,4 +1,7 @@
 use bevy::prelude::Component;
 
 #[derive(Component)]
-pub struct SaveLevelButtonTag;
+pub enum DebugButton {
+    Save,
+    Load,
+}

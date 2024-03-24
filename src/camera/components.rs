@@ -3,7 +3,7 @@ use bevy_ecs::{component::Component, reflect::ReflectComponent};
 
 #[derive(Component)]
 pub struct MainCamera {
-    pub(crate) default_scale: f32
+    pub(crate) default_scale: f32,
 }
 
 /// A component that adds panning camera controls to an orthographic camera
@@ -64,4 +64,6 @@ impl Default for PanCam {
             max_y: None,
         }
     }
-}
+
+}#[derive(Component)]
+pub struct CamBoundsTracker;
