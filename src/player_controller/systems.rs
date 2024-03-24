@@ -1,6 +1,6 @@
 use bevy::{asset::LoadedFolder, prelude::*};
 use bevy_rapier2d::prelude::*;
-use leafwing_input_manager::{action_state::ActionState, prelude::*, InputManagerBundle};
+use leafwing_input_manager::{action_state::ActionState, InputManagerBundle};
 
 use crate::animation;
 use crate::animation::components::Animation;
@@ -73,7 +73,7 @@ pub fn movement_system(
     mut q_player_sprite: Query<&mut Sprite, With<PlayerAnimationMap>>,
     input: Res<ActionState<Inputs>>,
 ) {
-    let ((mut vel), (mut sprite)) =
+    let (mut vel, mut sprite) =
         query_guard!(q_player.get_single_mut(), q_player_sprite.get_single_mut());
 
     let x_axis = input.value(&Inputs::Horizontal);

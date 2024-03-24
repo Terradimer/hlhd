@@ -23,3 +23,7 @@ pub struct Edges {
     pub(crate) horizontal: i8,
     pub(crate) vertical: i8,
 }
+
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct Focused;

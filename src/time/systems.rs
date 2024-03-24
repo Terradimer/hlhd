@@ -1,6 +1,5 @@
 use crate::time::resources::*;
 use bevy::prelude::*;
-use bevy_ecs::prelude::*;
 use bevy_rapier2d::plugin::{RapierConfiguration, TimestepMode};
 use std::time::Duration;
 

@@ -1,6 +1,5 @@
 use bevy::app::*;
 use bevy::prelude::*;
-use bevy_ecs::prelude::*;
 use bevy_pancam::PanCamPlugin;
 use crate::AppState;
 use crate::camera::systems::*;

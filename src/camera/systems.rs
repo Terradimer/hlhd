@@ -1,8 +1,7 @@
 use bevy::prelude::*;
-use bevy_ecs::prelude::*;
 use bevy_pancam::PanCam;
 use crate::camera::components::MainCamera;
-use bevy_rapier2d::render::{DebugRenderContext, RapierDebugRenderPlugin};
+use bevy_rapier2d::render::DebugRenderContext;
 use crate::camera::{ROOM_MAX, ROOM_MIN};
 use crate::macros::query_guard;
 use crate::player_controller::components::Player;

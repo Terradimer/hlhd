@@ -1,12 +1,10 @@
-use bevy::{
-    prelude::*,
-};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 
-use crate::camera::components::MainCamera;
+// use crate::camera::components::MainCamera;
 use crate::input::resources::{Inputs, MousePosition};
-use crate::world_generation::components::{Draggable, Dragging, Resizing, Scalable};
+use crate::world_generation::components::{Draggable, Dragging, Resizing, Scalable, Focused};
 use crate::world_generation::functions::detect_edge;
 
 use super::{
@@ -18,6 +16,7 @@ pub fn update_dev_entities(
     mouse_position: Res<MousePosition>,
     rapier_context: Res<RapierContext>,
     mut q_interactable: Query<(&Transform, Has<Draggable>, Has<Scalable>), Or<(With<Draggable>, With<Scalable>)>>,
+    q_focused: Query<Entity, With<Focused>>,
     input: Res<ActionState<Inputs>>,
 ) {
     if !input.just_pressed(&Inputs::Shoot) {
@@ -32,18 +31,21 @@ pub fn update_dev_entities(
                     let edge = detect_edge(&transform, mouse_position.position);
 
                     if let Some(edge) = edge {
+                        commands.entity(entity).insert(Focused);
                         commands.entity(entity).insert(Resizing {
                             origin: transform.translation.truncate()
-                                + Vec2::new(
-                                (transform.scale.x / 2.0) * -(edge.vertical as i32 as f32),
-                                (transform.scale.y / 2.0) * -(edge.horizontal as i32 as f32),
-                            ),
+                            //     + Vec2::new(
+                            //     (transform.scale.x / 2.0) * -(edge.vertical as i32 as f32),
+                            //     (transform.scale.y / 2.0) * -(edge.horizontal as i32 as f32),
+                            // )
+                            ,
                             edges: edge,
                         });
                         return false;
                     }
                 }
                 if draggable {
+                    commands.entity(entity).insert(Focused);
                     commands.entity(entity).insert(Dragging {
                         offset: mouse_position.position - transform.translation.truncate(),
                     });
@@ -57,7 +59,7 @@ pub fn update_dev_entities(
 pub fn dragging_env_entities(
     mut commands: Commands,
     mouse_position: Res<MousePosition>,
-    mut q_dragging_entity: Query<Entity, With<Dragging>>,
+    q_dragging_entity: Query<Entity, With<Dragging>>,
     mut q_dragging: Query<(&mut Transform, &Dragging)>,
     input: Res<ActionState<Inputs>>,
 ) {
@@ -81,7 +83,7 @@ pub fn dragging_env_entities(
 
 pub fn scale_dev_entities(
     mut commands: Commands,
-    mut q_resizing_entity: Query<Entity, With<Resizing>>,
+    q_resizing_entity: Query<Entity, With<Resizing>>,
     mut q_scaling: Query<(&mut Transform, &Resizing)>,
     mouse_position: Res<MousePosition>,
     input: Res<ActionState<Inputs>>,

@@ -1,14 +1,18 @@
 use bevy::app::{App, Plugin};
 use bevy::prelude::*;
 use bevy_ecs::prelude::IntoSystemConfigs;
+use leafwing_input_manager::action_state::ActionState;
 
+use crate::input::resources::Inputs;
 use crate::world_generation::ui::WorldGenUIPlugin;
 use crate::AppState;
 use systems::*;
+
+use self::components::Focused;
 pub(crate) mod components;
 mod functions;
 mod systems;
-mod ui;
+pub(crate) mod ui;
 
 pub const WINDOW_WIDTH: f32 = 1024.0;
 pub const WINDOW_HEIGHT: f32 = 720.0;
@@ -29,6 +33,7 @@ impl Plugin for WorldGenerationPlugin {
             .add_systems(
                 Update,
                 (
+                    (|mut commands: Commands, input: Res<ActionState<Inputs>>, query: Query<Entity, With<Focused>>|{if input.just_pressed(&Inputs::Shoot) {for entity in query.iter(){commands.entity(entity).remove::<Focused>();}}}).run_if(in_state(AppState::Dev)),
                     update_dev_entities.run_if(in_state(AppState::Dev)),
                     (
                         scale_dev_entities.run_if(in_state(AppState::Dev)),

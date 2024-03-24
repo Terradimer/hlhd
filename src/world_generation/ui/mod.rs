@@ -4,7 +4,7 @@ mod systems;
 
 use crate::AppState;
 use bevy::app::{App, Plugin, Update};
-use bevy_ecs::prelude::{in_state, IntoSystemConfigs, OnEnter, OnExit};
+use bevy_ecs::prelude::{in_state, IntoSystemConfigs};
 use bevy_egui::EguiPlugin;
 use systems::*;
 
