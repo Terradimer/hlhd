@@ -1,4 +1,4 @@
-use bevy::{math::vec2, prelude::*};
+use bevy::prelude::*;
 
 #[derive(Resource)]
 pub struct CamBounds {

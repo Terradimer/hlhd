@@ -36,15 +36,6 @@ pub struct EntityData {
 #[derive(Component, Reflect, Default, Serialize, Deserialize)]
 pub struct Saveable;
 
-#[derive(Reflect, Serialize, Deserialize)]
-pub struct EntityData {
-    pub(crate) position: Vec3,
-    pub(crate) scale: Vec3,
-}
-
-#[derive(Component, Reflect, Default, Serialize, Deserialize)]
-pub struct Saveable;
-
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub struct Focused;

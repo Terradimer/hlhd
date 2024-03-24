@@ -2,33 +2,19 @@ use super::{
     components::*,
     events::{LoadRoomEvent, SaveRoomEvent},
     functions::*,
-    MIN_SCALE, SNAP_SCALE, WINDOW_BOTTOM_Y, WINDOW_HEIGHT, WINDOW_LEFT_X, WINDOW_WIDTH,
+    MIN_SCALE, SNAP_SCALE,
 };
 use crate::input::resources::{Inputs, MousePosition};
 use bevy::{
-    math::vec3,
     prelude::*,
     scene::ron::{
-        self, from_str,
+        from_str,
         ser::{to_string_pretty, PrettyConfig},
     },
-    tasks::IoTaskPool,
-    utils::warn,
 };
-use bevy_ecs::{query, world};
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 use rfd::FileDialog;
-use std::{fs::File, io::Write};
-
-// use crate::camera::components::MainCamera;
-use crate::input::resources::{Inputs, MousePosition};
-use crate::world_generation::components::{Draggable, Dragging, Resizing, Scalable, Focused};
-use crate::world_generation::functions::detect_edge;
-
-use super::{
-    COLOR_PLATFORM, SNAP_SCALE, MIN_SCALE, WINDOW_BOTTOM_Y, WINDOW_HEIGHT, WINDOW_LEFT_X, WINDOW_WIDTH,
-};
 
 pub fn update_dev_entities(
     mut commands: Commands,

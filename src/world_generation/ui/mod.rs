@@ -1,5 +1,3 @@
-mod components;
-mod functions;
 mod systems;
 
 use crate::AppState;

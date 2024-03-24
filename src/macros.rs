@@ -1,3 +1,4 @@
+
 use bevy::prelude::Component;
 
 #[derive(Component)]
@@ -35,7 +36,6 @@ macro_rules! change_state {
             .remove::<$in_state>()
             .insert(($next_state, Init));
         $( $transition_logic )?
-        return
     };
 }
 
