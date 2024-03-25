@@ -1,16 +1,15 @@
 use bevy::{
+    diagnostic::LogDiagnosticsPlugin,
     prelude::*,
     render::{settings::RenderCreation, *},
     window::*,
 };
 
-use crate::animation::AnimationHandlerPlugin;
-use crate::camera::CameraHandlerPlugin;
-use crate::input::InputHandlerPlugin;
-use crate::player_controller::PlayerControllerPlugin;
-use crate::time::TimeScalarPlugin;
-use crate::world_generation::WorldGenerationPlugin;
-use bevy::diagnostic::LogDiagnosticsPlugin;
+use crate::{
+    animation::AnimationHandlerPlugin, camera::CameraHandlerPlugin, input::InputHandlerPlugin,
+    player_controller::PlayerControllerPlugin, time::TimeScalarPlugin,
+    world_generation::WorldGenerationPlugin,
+};
 use bevy_rapier2d::prelude::*;
 
 mod animation;

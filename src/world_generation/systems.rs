@@ -1,25 +1,12 @@
-use super::{
-    components::*,
-    events::{LoadRoomEvent, SaveRoomEvent},
-    functions::*,
-    MIN_SCALE, SNAP_SCALE, WINDOW_BOTTOM_Y, WINDOW_HEIGHT, WINDOW_LEFT_X, WINDOW_WIDTH,
+use super::{components::*, functions::*, rooms::events::LoadRoomEvent, MIN_SCALE, SNAP_SCALE};
+use crate::{
+    input::resources::{Inputs, MousePosition},
+    AppState,
 };
-use crate::input::resources::{Inputs, MousePosition};
-use bevy::{
-    math::vec3,
-    prelude::*,
-    scene::ron::{
-        self, from_str,
-        ser::{to_string_pretty, PrettyConfig},
-    },
-    tasks::IoTaskPool,
-    utils::warn,
-};
-use bevy_ecs::{query, world};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 use rfd::FileDialog;
-use std::{fs::File, io::Write};
 
 pub fn update_dev_entities(
     mut commands: Commands,
@@ -140,69 +127,10 @@ pub fn scale_dev_entities(
     }
 }
 
-pub fn make_test_scene(mut ev_loadcall: EventWriter<LoadRoomEvent>) {
+pub fn start_scene(mut ev_loadcall: EventWriter<LoadRoomEvent>) {
     let load_path = FileDialog::new()
         .add_filter("RON file", &["ron"])
         .pick_file();
 
     ev_loadcall.send(LoadRoomEvent { path: load_path });
-}
-
-pub fn save_room(
-    mut ev_savecall: EventReader<SaveRoomEvent>,
-    q_saveable: Query<(Entity, &Transform), With<Saveable>>,
-) {
-    if ev_savecall.is_empty() {
-        return;
-    }
-
-    let save_path = FileDialog::new()
-        .add_filter("RON file", &["ron"])
-        .save_file();
-
-    if let Some(path) = save_path {
-        let mut entity_data: Vec<EntityData> = Vec::new();
-
-        for (_, transform) in q_saveable.iter() {
-            entity_data.push(EntityData {
-                position: transform.translation,
-                scale: transform.scale,
-            });
-        }
-
-        let mut data = std::collections::HashMap::new();
-        data.insert("platforms", entity_data);
-
-        let pretty_config = PrettyConfig::new();
-        let ron_string = to_string_pretty(&data, pretty_config).expect("Failed to serialize data");
-
-        std::fs::write(path, ron_string).expect("Failed to write to file");
-    }
-
-    ev_savecall.clear()
-}
-
-pub fn load_room(mut commands: Commands, mut ev_loadcall: EventReader<LoadRoomEvent>) {
-    if ev_loadcall.is_empty() {
-        return;
-    }
-
-    let load_path = &ev_loadcall.read().next().unwrap().path;
-
-    if let Some(path) = load_path {
-        let file_contents = std::fs::read_to_string(path).expect("Failed to read file");
-
-        let data: std::collections::HashMap<String, Vec<EntityData>> =
-            from_str(&file_contents).expect("Failed to deserialize RON data");
-
-        if let Some(platforms) = data.get("platforms") {
-            for platform in platforms {
-                commands.spawn(gen_platform(platform.position, platform.scale));
-            }
-        } else {
-            println!("No 'platforms' data found in the file");
-        }
-    }
-
-    ev_loadcall.clear()
 }

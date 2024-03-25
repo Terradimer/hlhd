@@ -1,5 +1,4 @@
 use bevy::app::{App, Plugin, Update};
-use std::time::Duration;
 
 pub mod resources;
 mod systems;

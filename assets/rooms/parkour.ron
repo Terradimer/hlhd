@@ -1,0 +1,98 @@
+[
+    Platform(
+        position: (-220.0, 40.0, 0.0),
+        scale: (30.0, 30.0, 0.0),
+    ),
+    Platform(
+        position: (-490.0, -130.0, 0.0),
+        scale: (370.0, 50.0, 1.0),
+    ),
+    Platform(
+        position: (667.5, -30.000002, 0.0),
+        scale: (320.0, 740.0, 0.0),
+    ),
+    Platform(
+        position: (-15.000001, 310.0, 0.0),
+        scale: (1670.0, 60.0, 0.0),
+    ),
+    Platform(
+        position: (10.0, 50.0, 0.0),
+        scale: (30.0, 30.0, 0.0),
+    ),
+    Platform(
+        position: (-560.0, -10.0, 0.0),
+        scale: (250.0, 30.0, 1.0),
+    ),
+    Platform(
+        position: (-170.0, -370.0, 0.0),
+        scale: (1400.0, 60.0, 0.0),
+    ),
+    Platform(
+        position: (-810.00006, -30.000002, 0.0),
+        scale: (290.0, 740.0, 1.0),
+    ),
+    Platform(
+        position: (-10.0, -330.0, 0.0),
+        scale: (310.0, 140.0, 1.0),
+    ),
+    Platform(
+        position: (400.0, 60.000004, 0.0),
+        scale: (300.0, 30.0, 1.0),
+    ),
+    Platform(
+        position: (370.0, -190.0, 0.0),
+        scale: (300.0, 30.0, 1.0),
+    ),
+    Platform(
+        position: (-30.000002, -130.0, 0.0),
+        scale: (250.0, 30.0, 1.0),
+    ),
+    Platform(
+        position: (-220.0, 40.0, 0.0),
+        scale: (30.0, 30.0, 0.0),
+    ),
+    Platform(
+        position: (-490.0, -130.0, 0.0),
+        scale: (370.0, 50.0, 1.0),
+    ),
+    Platform(
+        position: (667.5, -30.000002, 0.0),
+        scale: (320.0, 740.0, 0.0),
+    ),
+    Platform(
+        position: (-15.000001, 310.0, 0.0),
+        scale: (1670.0, 60.0, 0.0),
+    ),
+    Platform(
+        position: (10.0, 50.0, 0.0),
+        scale: (30.0, 30.0, 0.0),
+    ),
+    Platform(
+        position: (-560.0, -10.0, 0.0),
+        scale: (250.0, 30.0, 1.0),
+    ),
+    Platform(
+        position: (-170.0, -370.0, 0.0),
+        scale: (1400.0, 60.0, 0.0),
+    ),
+    Platform(
+        position: (-810.00006, -30.000002, 0.0),
+        scale: (290.0, 740.0, 1.0),
+    ),
+    Platform(
+        position: (-10.0, -330.0, 0.0),
+        scale: (310.0, 140.0, 1.0),
+    ),
+    Platform(
+        position: (400.0, 60.000004, 0.0),
+        scale: (300.0, 30.0, 1.0),
+    ),
+    Platform(
+        position: (370.0, -190.0, 0.0),
+        scale: (300.0, 30.0, 1.0),
+    ),
+    Platform(
+        position: (-30.000002, -130.0, 0.0),
+        scale: (250.0, 30.0, 1.0),
+    ),
+]

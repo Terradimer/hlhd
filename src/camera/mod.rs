@@ -19,7 +19,7 @@ impl Plugin for CameraHandlerPlugin {
             .add_systems(OnEnter(AppState::Dev), on_enter_dev)
             .add_systems(
                 OnEnter(AppState::Playing),
-                (on_enter_playing, update_cam_bounds),
+                (update_cam_bounds, on_enter_playing).chain(),
             );
     }
 }

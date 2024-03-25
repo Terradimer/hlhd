@@ -15,9 +15,6 @@ const COYOTE_TIME: f32 = 0.2;
 
 pub struct PlayerControllerPlugin;
 
-// Todo: Add the remaining state transitions and their behavior
-// Todo: Attach the sprite to the player and make a better system handling sprites
-
 impl Plugin for PlayerControllerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(

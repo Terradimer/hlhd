@@ -1,6 +1,6 @@
-use bevy::{math::vec2, prelude::*};
+use bevy::{log::tracing_subscriber::field::debug, math::vec2, prelude::*};
 
-#[derive(Resource)]
+#[derive(Resource, Debug)]
 pub struct CamBounds {
     pub min_x: f32,
     pub max_x: f32,

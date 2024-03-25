@@ -121,8 +121,8 @@ pub fn contact_detection(
         for contact in contact_pair.manifolds() {
             let normal = contact.normal();
 
-            contacts.top |= normal.y < 0.;
-            contacts.bottom |= normal.y > 0.;
+            contacts.top |= normal.y > 0.;
+            contacts.bottom |= normal.y < 0.;
             contacts.right |= normal.x > 0.;
             contacts.left |= normal.x < 0.;
         }

@@ -1,4 +1,4 @@
-use super::COLOR_PLATFORM;
+use super::{rooms::components::Saveable, COLOR_PLATFORM};
 use crate::{
     camera::components::CamBoundsTracker,
     world_generation::{
@@ -9,7 +9,7 @@ use crate::{
 use bevy::prelude::*;
 use bevy_rapier2d::{
     dynamics::RigidBody,
-    geometry::{Collider, CollisionGroups, Friction},
+    geometry::{Collider, CollisionGroups, Friction, Sensor},
 };
 
 pub fn detect_edge(transform: &Transform, mouse_position: Vec2) -> Option<Edges> {
@@ -67,12 +67,33 @@ pub fn gen_platform(
             ..Default::default()
         },
         Scalable,
-        Saveable,
+        Saveable::Platform,
         Draggable,
         RigidBody::Fixed,
         Collider::cuboid(0.5, 0.5),
         CamBoundsTracker,
         crate::collision_groups::Groups::environment(),
         Friction::new(0.),
+    )
+}
+
+pub fn gen_exit(
+    _translation: Vec3,
+    _scale: Vec3,
+) -> (
+    Scalable,
+    Saveable,
+    Draggable,
+    Collider,
+    Sensor,
+    CollisionGroups,
+) {
+    (
+        Scalable,
+        Saveable::Exit,
+        Draggable,
+        Collider::cuboid(0.5, 0.5),
+        Sensor,
+        crate::collision_groups::Groups::environment(),
     )
 }

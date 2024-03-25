@@ -5,7 +5,7 @@ use bevy_ecs::event::Event;
 #[derive(Event)]
 pub struct SaveRoomEvent;
 
-#[derive(Event)]
+#[derive(Event, Clone)]
 pub struct LoadRoomEvent {
     pub path: Option<PathBuf>,
 }

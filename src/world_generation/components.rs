@@ -26,12 +26,3 @@ pub struct Edges {
     pub(crate) horizontal: i8,
     pub(crate) vertical: i8,
 }
-
-#[derive(Reflect, Serialize, Deserialize)]
-pub struct EntityData {
-    pub(crate) position: Vec3,
-    pub(crate) scale: Vec3,
-}
-
-#[derive(Component, Reflect, Default, Serialize, Deserialize)]
-pub struct Saveable;

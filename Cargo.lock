@@ -2487,6 +2487,7 @@ dependencies = [
  "leafwing-input-manager",
  "rfd",
  "serde",
+ "serde_json",
 ]
 
 [[package]]

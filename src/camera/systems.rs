@@ -8,15 +8,24 @@ use bevy_rapier2d::render::DebugRenderContext;
 use super::{components::*, resources::*};
 
 pub fn on_enter_playing(
-    mut q_camera: Query<(&mut OrthographicProjection, &mut PanCam, &MainCamera)>,
+    mut q_camera: Query<(
+        &mut OrthographicProjection,
+        &mut Transform,
+        &mut PanCam,
+        &MainCamera,
+    )>,
     mut debug_rendering: ResMut<DebugRenderContext>,
+    q_player: Query<&Transform, (With<Player>, Without<MainCamera>)>,
 ) {
     debug_rendering.enabled = false;
 
-    if let Ok((mut cam, mut pan, cam_data)) = q_camera.get_single_mut() {
-        pan.enabled = false;
-        cam.scale = cam_data.default_scale;
-    }
+    let ((mut cam, mut cam_transform, mut pan, cam_data), player) =
+        query_guard!(q_camera.get_single_mut(), q_player.get_single());
+
+    pan.enabled = false;
+    cam.scale = cam_data.default_scale;
+
+    cam_transform.translation = player.translation;
 }
 
 pub fn on_enter_dev(

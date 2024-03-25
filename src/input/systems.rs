@@ -1,3 +1,4 @@
+use crate::macros::query_guard;
 use crate::AppState;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
@@ -12,7 +13,7 @@ pub fn update_cursor_position(
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
-    let (camera, camera_transform) = q_camera.single();
+    let (camera, camera_transform) = query_guard!(q_camera.get_single());
     let window = q_window.single();
 
     if let Some(world_position) = window
