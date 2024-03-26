@@ -61,7 +61,7 @@ pub fn cleanup_dev_buttons(mut commands: Commands, query: Query<Entity, With<Deb
     }
 }
 
-pub fn save_level_on_click(
+pub fn on_click(
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor, &DebugButton),
         Changed<Interaction>,

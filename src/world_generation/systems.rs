@@ -1,8 +1,5 @@
 use super::{components::*, functions::*, rooms::events::LoadRoomEvent, MIN_SCALE, SNAP_SCALE};
-use crate::{
-    input::resources::{Inputs, MousePosition},
-    AppState,
-};
+use crate::input::resources::{Inputs, MousePosition};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
@@ -117,7 +114,6 @@ pub fn scale_dev_entities(
             }
             _ => {
                 if new_scale.x > MIN_SCALE && new_scale.y > MIN_SCALE {
-                    // Check both components
                     transform.scale = new_scale;
                     let z = transform.translation.z;
                     transform.translation = (origin + diff / 2.).extend(z);
@@ -127,10 +123,12 @@ pub fn scale_dev_entities(
     }
 }
 
-pub fn start_scene(mut ev_loadcall: EventWriter<LoadRoomEvent>) {
+pub fn start_scene(mut commands: Commands, mut ev_loadcall: EventWriter<LoadRoomEvent>) {
     let load_path = FileDialog::new()
         .add_filter("RON file", &["ron"])
         .pick_file();
+
+    commands.spawn(gen_exit(Vec3::ZERO, Vec2::splat(275.).extend(0.)));
 
     ev_loadcall.send(LoadRoomEvent { path: load_path });
 }

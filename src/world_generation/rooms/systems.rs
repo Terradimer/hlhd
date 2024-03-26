@@ -1,5 +1,6 @@
 use bevy::{
     hierarchy::BuildChildren,
+    log::warn,
     render::view::InheritedVisibility,
     scene::ron::{
         from_str,
@@ -9,15 +10,17 @@ use bevy::{
 };
 use bevy_ecs::{
     event::EventReader,
-    system::{Commands, Query},
+    query::With,
+    system::{Commands, Query, ResMut},
 };
 use rfd::FileDialog;
 
 use crate::world_generation::functions::gen_platform;
 
 use super::{
-    components::{SaveData, Saveable},
+    components::{Room, RoomBounds, RoomBoundsAffector, RoomState, SaveData, Saveable},
     events::SaveRoomEvent,
+    resources::CurrentRoom,
     LoadRoomEvent,
 };
 
@@ -76,7 +79,15 @@ pub fn load_room(mut commands: Commands, mut ev_loadcall: EventReader<LoadRoomEv
         let data: Vec<SaveData> = from_str(&file_contents).expect("Failed to deserialize RON data");
 
         commands
-            .spawn((TransformBundle::default(), InheritedVisibility::VISIBLE))
+            .spawn((
+                TransformBundle::default(),
+                InheritedVisibility::VISIBLE,
+                Room {
+                    state: RoomState::Loaded,
+                    bounds: RoomBounds::default(),
+                    neighbors: Vec::new(),
+                },
+            ))
             .with_children(|parent| {
                 for loaded_data in data {
                     match loaded_data {
@@ -88,5 +99,26 @@ pub fn load_room(mut commands: Commands, mut ev_loadcall: EventReader<LoadRoomEv
                     }
                 }
             });
+    }
+}
+
+pub fn update_room_bounds(
+    q_bounds: Query<&Transform, With<RoomBoundsAffector>>,
+    mut current_room: ResMut<CurrentRoom>,
+) {
+    let bounds = &mut current_room.room.bounds;
+    for transform in q_bounds.iter() {
+        bounds.min_x = bounds
+            .min_x
+            .min(transform.translation.x - transform.scale.x.abs() / 2.);
+        bounds.max_x = bounds
+            .max_x
+            .max(transform.translation.x + transform.scale.x.abs() / 2.);
+        bounds.min_y = bounds
+            .min_y
+            .min(transform.translation.y - transform.scale.y.abs() / 2.);
+        bounds.max_y = bounds
+            .max_y
+            .max(transform.translation.y + transform.scale.y.abs() / 2.);
     }
 }

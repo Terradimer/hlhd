@@ -1,11 +1,12 @@
 use crate::{
     macros::query_guard, player_controller::components::Player, time::resources::ScaledTime,
+    world_generation::rooms::resources::CurrentRoom,
 };
 use bevy::prelude::*;
 use bevy_pancam::PanCam;
 use bevy_rapier2d::render::DebugRenderContext;
 
-use super::{components::*, resources::*};
+use super::components::*;
 
 pub fn on_enter_playing(
     mut q_camera: Query<(
@@ -38,26 +39,6 @@ pub fn on_enter_dev(
     }
 }
 
-pub fn update_cam_bounds(
-    q_bounds: Query<&Transform, With<CamBoundsTracker>>,
-    mut bounds: ResMut<CamBounds>,
-) {
-    for transform in q_bounds.iter() {
-        bounds.min_x = bounds
-            .min_x
-            .min(transform.translation.x - transform.scale.x / 2.);
-        bounds.max_x = bounds
-            .max_x
-            .max(transform.translation.x + transform.scale.x / 2.);
-        bounds.min_y = bounds
-            .min_y
-            .min(transform.translation.y - transform.scale.y / 2.);
-        bounds.max_y = bounds
-            .max_y
-            .max(transform.translation.y + transform.scale.y / 2.);
-    }
-}
-
 pub fn setup(mut commands: Commands) {
     commands.spawn((
         Camera2dBundle::default(),
@@ -76,9 +57,10 @@ pub fn setup(mut commands: Commands) {
 pub fn follow_player(
     mut camera_query: Query<(&mut Transform, &OrthographicProjection), With<MainCamera>>,
     player_query: Query<&Transform, (With<Player>, Without<MainCamera>)>,
-    bounds: Res<CamBounds>,
+    current_room: Res<CurrentRoom>,
     time: Res<ScaledTime>,
 ) {
+    let bounds = &current_room.room.bounds;
     let (player_transform, (mut camera_transform, ortho)) =
         query_guard!(player_query.get_single(), camera_query.get_single_mut());
 

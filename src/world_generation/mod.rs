@@ -4,10 +4,10 @@ use bevy::{
 };
 use bevy_ecs::prelude::IntoSystemConfigs;
 
-use crate::{camera::systems::update_cam_bounds, world_generation::ui::WorldGenUIPlugin, AppState};
+use crate::{world_generation::ui::WorldGenUIPlugin, AppState};
 use systems::*;
 
-use self::rooms::RoomsPlugin;
+use self::rooms::{systems::update_room_bounds, RoomsPlugin};
 
 pub(crate) mod components;
 mod functions;

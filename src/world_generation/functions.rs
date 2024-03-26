@@ -1,10 +1,10 @@
-use super::{rooms::components::Saveable, COLOR_PLATFORM};
-use crate::{
-    camera::components::CamBoundsTracker,
-    world_generation::{
-        components::{Edges, *},
-        EDGE_THRESHOLD,
-    },
+use super::{
+    rooms::components::{RoomBoundsAffector, Saveable},
+    COLOR_PLATFORM,
+};
+use crate::world_generation::{
+    components::{Edges, *},
+    EDGE_THRESHOLD,
 };
 use bevy::prelude::*;
 use bevy_rapier2d::{
@@ -40,8 +40,8 @@ pub fn detect_edge(transform: &Transform, mouse_position: Vec2) -> Option<Edges>
 }
 
 pub fn gen_platform(
-    _translation: Vec3,
-    _scale: Vec3,
+    translation: Vec3,
+    scale: Vec3,
 ) -> (
     SpriteBundle,
     Scalable,
@@ -49,7 +49,7 @@ pub fn gen_platform(
     Draggable,
     RigidBody,
     Collider,
-    CamBoundsTracker,
+    RoomBoundsAffector,
     CollisionGroups,
     Friction,
 ) {
@@ -60,8 +60,8 @@ pub fn gen_platform(
                 ..Default::default()
             },
             transform: Transform {
-                translation: _translation,
-                scale: _scale,
+                translation,
+                scale,
                 ..Default::default()
             },
             ..Default::default()
@@ -71,16 +71,17 @@ pub fn gen_platform(
         Draggable,
         RigidBody::Fixed,
         Collider::cuboid(0.5, 0.5),
-        CamBoundsTracker,
+        RoomBoundsAffector,
         crate::collision_groups::Groups::environment(),
         Friction::new(0.),
     )
 }
 
 pub fn gen_exit(
-    _translation: Vec3,
-    _scale: Vec3,
+    translation: Vec3,
+    scale: Vec3,
 ) -> (
+    SpriteBundle,
     Scalable,
     Saveable,
     Draggable,
@@ -89,6 +90,18 @@ pub fn gen_exit(
     CollisionGroups,
 ) {
     (
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::BLACK.with_a(0.),
+                ..Default::default()
+            },
+            transform: Transform {
+                translation,
+                scale,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
         Scalable,
         Saveable::Exit,
         Draggable,
