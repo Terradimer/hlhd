@@ -1,9 +1,5 @@
 use bevy::prelude::Component;
 
-#[derive(Component)]
-#[component(storage = "SparseSet")]
-pub struct Init;
-
 macro_rules! query_guard {
     ($query:expr) => {
         if let Ok(result) = $query {
@@ -22,21 +18,10 @@ macro_rules! on_enter {
         if $init {
             $commands
                 .entity($entity)
-                .remove::<Init>();
+                .remove::<JustEntered>();
             $( $logic )?
         }
     };
 }
 
-macro_rules! change_state {
-    ($commands:ident, $entity:expr, $in_state:ty, $next_state:expr $(, $transition_logic:tt)?) => {
-        $commands
-            .entity($entity)
-            .remove::<$in_state>()
-            .insert(($next_state, Init));
-        $( $transition_logic )?
-        return
-    };
-}
-
-pub(crate) use {change_state, on_enter, query_guard};
+pub(crate) use {on_enter, query_guard};

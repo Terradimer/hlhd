@@ -1,7 +1,6 @@
 use bevy::prelude::{Component, Timer, TimerMode};
 
-use crate::animation::components::*;
-use crate::player_controller::COYOTE_TIME;
+use super::COYOTE_TIME;
 
 #[derive(Component)]
 pub struct Player; // Tag component for the player
@@ -12,15 +11,8 @@ pub struct ContactDirection {
     pub bottom: bool,
     pub left: bool,
     pub right: bool,
-}
-
-#[derive(Component)]
-pub struct PlayerAnimationMap {
-    pub idle: Animation,
-    pub falling: Animation,
-    pub rising: Animation,
-    pub peak: Animation,
-    pub walk: Animation,
+    pub front: bool,
+    pub back: bool
 }
 
 // States

@@ -1,4 +1,4 @@
-use bevy_rapier2d::geometry::{CollisionGroups, Group};
+use bevy_rapier3d::geometry::{CollisionGroups, Group};
 
 pub struct Groups;
 

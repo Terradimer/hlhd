@@ -1,12 +1,13 @@
 use crate::macros::query_guard;
 use crate::AppState;
 use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
+use bevy::window::{CursorGrabMode, PrimaryWindow};
 use leafwing_input_manager::action_state::ActionState;
 
 use crate::camera::components::MainCamera;
-use crate::input::resources::{Inputs, MousePosition};
-use crate::time::resources::ScaledTime;
+use crate::input::resources::MousePosition;
+
+use super::Inputs;
 
 pub fn update_cursor_position(
     mut mouse_coords: ResMut<MousePosition>,
@@ -25,25 +26,29 @@ pub fn update_cursor_position(
     }
 }
 
-pub fn enter_playing(
-    input: Res<ActionState<Inputs>>,
-    mut next_state: ResMut<NextState<AppState>>,
-    mut time: ResMut<ScaledTime>,
+
+pub fn enter_editor(
+    input: Res<ActionState<Inputs>>, 
+    mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
+    mut state: ResMut<NextState<AppState>>
 ) {
     if input.just_pressed(&Inputs::Esc) {
-        time.scale = time.stored_scale;
-        next_state.set(AppState::Playing)
+        let mut primary_window = q_windows.single_mut();
+        primary_window.cursor.grab_mode = CursorGrabMode::None;
+        primary_window.cursor.visible = true;
+        state.set(AppState::Editor);
     }
 }
 
-pub fn enter_dev(
-    input: Res<ActionState<Inputs>>,
-    mut next_state: ResMut<NextState<AppState>>,
-    mut time: ResMut<ScaledTime>,
+pub fn exit_editor(
+    input: Res<ActionState<Inputs>>, 
+    mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
+    mut state: ResMut<NextState<AppState>>
 ) {
     if input.just_pressed(&Inputs::Esc) {
-        time.stored_scale = time.scale;
-        time.scale = 0.;
-        next_state.set(AppState::Dev)
+        let mut primary_window = q_windows.single_mut();
+        primary_window.cursor.grab_mode = CursorGrabMode::Locked;
+        primary_window.cursor.visible = false;
+        state.set(AppState::Playing);
     }
 }

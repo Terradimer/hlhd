@@ -1,32 +1,37 @@
 use bevy::{
-    diagnostic::LogDiagnosticsPlugin,
-    prelude::*,
-    render::{settings::RenderCreation, *},
-    window::*,
+    diagnostic::LogDiagnosticsPlugin, input::keyboard::{self, KeyboardInput}, prelude::*, render::{settings::RenderCreation, *}, window::*
 };
 
-use crate::{
-    animation::AnimationHandlerPlugin, camera::CameraHandlerPlugin, input::InputHandlerPlugin,
-    player_controller::PlayerControllerPlugin, time::TimeScalarPlugin,
-    world_generation::WorldGenerationPlugin,
-};
-use bevy_rapier2d::prelude::*;
+use bevy_editor_pls::{controls::{self, EditorControls}, EditorPlugin};
+// use crate::{
+//     animation::AnimationHandlerPlugin, camera::CameraHandlerPlugin, input::InputHandlerPlugin,
+//     player_controller::PlayerControllerPlugin, time::TimeScalarPlugin,
+//     world_generation::WorldGenerationPlugin,
+// };
+use bevy_rapier3d::prelude::*;
+use camera::CameraHandlerPlugin;
+use input::InputHandlerPlugin;
+use player::PlayerPlugin;
+use time::TimeScalarPlugin;
+use user_settings::{DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH};
+use world_gen::WorldGenerationPlugin;
 
-mod animation;
 mod camera;
 mod collision_groups;
 mod input;
 mod macros;
-mod player_controller;
+// mod world_generation;
 mod time;
-mod world_generation;
+mod user_settings;
+mod world_gen;
+mod player;
+mod state_machines;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
 enum AppState {
     #[default]
-    Loading,
     Playing,
-    Dev,
+    Editor
 }
 
 fn main() {
@@ -37,8 +42,8 @@ fn main() {
                     primary_window: Some(Window {
                         title: "HardLight HyperDriver".to_string(),
                         resolution: WindowResolution::new(
-                            world_generation::WINDOW_WIDTH,
-                            world_generation::WINDOW_HEIGHT,
+                            DEFAULT_WINDOW_WIDTH,
+                            DEFAULT_WINDOW_HEIGHT,
                         ),
                         present_mode: PresentMode::AutoNoVsync,
                         resizable: false,
@@ -56,13 +61,12 @@ fn main() {
                 .set(ImagePlugin::default_nearest()), // this is just for the pixel art demo sprites
             //FrameTimeDiagnosticsPlugin::default(),
             LogDiagnosticsPlugin::default(),
-            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.),
-            RapierDebugRenderPlugin::disabled(Default::default()),
+            RapierPhysicsPlugin::<NoUserData>::default(),
             // Internal Crates
             TimeScalarPlugin,
+            EditorPlugin::default(),
             InputHandlerPlugin,
-            AnimationHandlerPlugin,
-            PlayerControllerPlugin,
+            PlayerPlugin,
             WorldGenerationPlugin,
             CameraHandlerPlugin,
         ))
@@ -70,6 +74,23 @@ fn main() {
             enabled: false,
             ..default()
         })
+        .insert_resource(editor_controls())
         .init_state::<AppState>()
         .run();
+}
+
+
+fn editor_controls() -> EditorControls {
+    let mut editor_controls = EditorControls::default_bindings();
+    editor_controls.unbind(controls::Action::PlayPauseEditor);
+
+    editor_controls.insert(
+        controls::Action::PlayPauseEditor,
+        controls::Binding {
+            input: controls::UserInput::Single(controls::Button::Keyboard(KeyCode::Escape)),
+            conditions: vec![controls::BindingCondition::ListeningForText(false)],
+        },
+    );
+
+    editor_controls
 }
