@@ -26,11 +26,10 @@ pub fn update_cursor_position(
     }
 }
 
-
 pub fn enter_editor(
-    input: Res<ActionState<Inputs>>, 
+    input: Res<ActionState<Inputs>>,
     mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
-    mut state: ResMut<NextState<AppState>>
+    mut state: ResMut<NextState<AppState>>,
 ) {
     if input.just_pressed(&Inputs::Esc) {
         let mut primary_window = q_windows.single_mut();
@@ -41,9 +40,9 @@ pub fn enter_editor(
 }
 
 pub fn exit_editor(
-    input: Res<ActionState<Inputs>>, 
+    input: Res<ActionState<Inputs>>,
     mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
-    mut state: ResMut<NextState<AppState>>
+    mut state: ResMut<NextState<AppState>>,
 ) {
     if input.just_pressed(&Inputs::Esc) {
         let mut primary_window = q_windows.single_mut();

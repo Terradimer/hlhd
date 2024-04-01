@@ -2,13 +2,13 @@ use bevy::{asset::LoadedFolder, prelude::*};
 use bevy_rapier3d::prelude::*;
 use leafwing_input_manager::{action_state::ActionState, prelude::*, InputManagerBundle};
 
-use crate::camera::components::MainCamera;
+use super::{JUMP_STRENGTH, PLAYER_SPEED};
+use crate::camera::components::{CameraAnchor, MainCamera};
 use crate::collision_groups::Groups;
 use crate::input::Inputs;
 use crate::macros::{on_enter, query_guard};
 use crate::state_machines::*;
 use crate::time::resources::ScaledTime;
-use super::{JUMP_STRENGTH, PLAYER_SPEED};
 
 use super::components::*;
 
@@ -19,8 +19,7 @@ pub fn in_air(
         (With<Player>, With<InAir>),
     >,
 ) {
-    let (p_entity, contacts, vel, init) =
-        query_guard!(q_player.get_single_mut());
+    let (p_entity, contacts, vel, init) = query_guard!(q_player.get_single_mut());
 
     if contacts.bottom {
         change_state::<InAir, Grounded>(&mut commands, p_entity, Grounded::default());
@@ -33,8 +32,7 @@ pub fn grounded(
     input: Res<ActionState<Inputs>>,
     time: Res<Time>,
 ) {
-    let (p_entity, contacts, vel, mut state_data) =
-        query_guard!(q_player.get_single_mut());
+    let (p_entity, contacts, vel, mut state_data) = query_guard!(q_player.get_single_mut());
 
     if !contacts.bottom {
         if state_data.coyote_time.tick(time.delta()).finished() {
@@ -54,13 +52,18 @@ pub fn movement_system(
     mut q_player: Query<&mut Velocity, Or<(With<InAir>, With<Grounded>, With<Jumping>)>>,
     q_cam: Query<&Transform, With<MainCamera>>,
     input: Res<ActionState<Inputs>>,
-    time: Res<ScaledTime>
+    time: Res<ScaledTime>,
 ) {
     let (mut vel, camera_transform) = query_guard!(q_player.get_single_mut(), q_cam.get_single());
 
-    let movement_axis = input.clamped_axis_pair(&Inputs::Movement).unwrap().xy().normalize_or_zero();
+    let movement_axis = input
+        .clamped_axis_pair(&Inputs::Movement)
+        .unwrap()
+        .xy()
+        .normalize_or_zero();
     let yaw = camera_transform.rotation.to_euler(EulerRot::YXZ).0;
-    let direction = Quat::from_rotation_y(yaw).mul_vec3(Vec3::new(movement_axis.x, 0., -movement_axis.y));
+    let direction =
+        Quat::from_rotation_y(yaw).mul_vec3(Vec3::new(movement_axis.x, 0., -movement_axis.y));
 
     vel.linvel.x = direction.x * PLAYER_SPEED * time.delta.as_secs_f32();
     vel.linvel.z = direction.z * PLAYER_SPEED * time.delta.as_secs_f32();
@@ -69,13 +72,17 @@ pub fn movement_system(
 pub fn jumping(
     mut commands: Commands,
     mut p_query: Query<
-        (Entity, &mut Velocity, &mut ExternalImpulse, Has<JustEntered>),
+        (
+            Entity,
+            &mut Velocity,
+            &mut ExternalImpulse,
+            Has<JustEntered>,
+        ),
         (With<Player>, With<Jumping>),
     >,
     input: Res<ActionState<Inputs>>,
 ) {
-    let (p_entity, mut vel, mut applied_impulse, init) =
-        query_guard!(p_query.get_single_mut());
+    let (p_entity, mut vel, mut applied_impulse, init) = query_guard!(p_query.get_single_mut());
 
     on_enter!(commands, p_entity, init, {
         applied_impulse.impulse.y = JUMP_STRENGTH;
@@ -105,7 +112,7 @@ pub fn contact_detection(
             contacts.bottom |= normal.y > 0.;
             contacts.right |= normal.x > 0.;
             contacts.left |= normal.x < 0.;
-            contacts.front |= normal.z > 0.; 
+            contacts.front |= normal.z > 0.;
             contacts.back |= normal.z < 0.;
         }
     }
@@ -116,31 +123,27 @@ pub fn contact_detection(
 pub fn spawn_player(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>, 
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let player_height: f32 = 2.5;
+    let start_pos = Vec3::new(0., 10., 0.);
 
     let player_base = commands
         .spawn((
+            SpatialBundle::from_transform(Transform::from_translation(start_pos)),
             Player,
-            InputManagerBundle {
-                input_map: Inputs::input_map(),
-                ..default()
-            },
             InAir,
-            PbrBundle {
-                mesh: meshes.add(Capsule3d::new(player_height / 2., player_height)),
-                transform: Transform::from_xyz(0., 10., 0.),
-                material: materials.add(Color::WHITE),
-                ..default()
-            }
         ))
         .id();
 
-    let camera = commands
-        .spawn((
-            
-        )).id();
+    let model = commands
+        .spawn((PbrBundle {
+            mesh: meshes.add(Capsule3d::new(player_height / 2., player_height)),
+            transform: Transform::default(),
+            material: materials.add(Color::WHITE),
+            ..default()
+        },))
+        .id();
 
     let physics = (
         RigidBody::Dynamic,
@@ -164,6 +167,6 @@ pub fn spawn_player(
 
     commands
         .entity(player_base)
-        .add_child(camera)
+        .add_child(model)
         .insert(physics);
 }

@@ -18,11 +18,9 @@ impl Plugin for PlayerPlugin {
             Update,
             (
                 contact_detection,
-                (jumping, in_air, grounded, movement_system)
-                //(movement_system, in_air, grounded, jumping),
-            )
-                //.run_if(in_state(AppState::Playing)),
-            //.chain(),
+                (jumping, in_air, grounded, movement_system), //(movement_system, in_air, grounded, jumping),
+            ), //.run_if(in_state(AppState::Playing)),
+               //.chain(),
         )
         .add_systems(Startup, spawn_player);
     }

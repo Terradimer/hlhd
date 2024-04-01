@@ -10,9 +10,9 @@ use super::{
 };
 
 pub fn start_scene(
-    mut commands: Commands, 
+    mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>, 
+    mut materials: ResMut<Assets<StandardMaterial>>,
     // mut load_request: ResMut<LoadRequest>
 ) {
     // load_request.path = FileDialog::new()
@@ -26,19 +26,21 @@ pub fn start_scene(
             ..default()
         },
         Groups::ENVIRONMENT,
-        Collider::cuboid(50., 0.5, 50.)
+        Collider::cuboid(50., 0.5, 50.),
     ));
 
-    // commands.spawn(
-    //     PointLightBundle {
-    //     point_light: PointLight {
-    //         intensity: 20000000.,
-    //         radius: 100.,
-    //         ..default()
-    //     },
-    //     transform: Transform::from_xyz(0.0, 10.0, 0.0),
-    //     ..default()
-    // });
+    commands.spawn(
+        PointLightBundle {
+        point_light: PointLight {
+            intensity: 2000000.,
+            radius: 360.,
+            range: 200000.,
+            shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform::from_xyz(0.0, 20.0, 0.0),
+        ..default()
+    });
 }
 
 // pub fn load_room(mut commands: Commands) {}

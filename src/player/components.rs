@@ -12,7 +12,7 @@ pub struct ContactDirection {
     pub left: bool,
     pub right: bool,
     pub front: bool,
-    pub back: bool
+    pub back: bool,
 }
 
 // States

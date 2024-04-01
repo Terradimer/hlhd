@@ -47,10 +47,13 @@ impl Plugin for InputHandlerPlugin {
             .init_resource::<ActionState<Inputs>>()
             .init_resource::<resources::MousePosition>()
             .insert_resource(Inputs::input_map())
-            .add_systems(Update, (
-                update_cursor_position, 
-                enter_editor.run_if(in_state(AppState::Playing)),
-                exit_editor.run_if(in_state(AppState::Editor))
-            ));
+            .add_systems(
+                Update,
+                (
+                    update_cursor_position,
+                    enter_editor.run_if(in_state(AppState::Playing)),
+                    exit_editor.run_if(in_state(AppState::Editor)),
+                ),
+            );
     }
 }

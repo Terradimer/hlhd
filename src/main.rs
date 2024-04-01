@@ -1,8 +1,15 @@
 use bevy::{
-    diagnostic::LogDiagnosticsPlugin, input::keyboard::{self, KeyboardInput}, prelude::*, render::{settings::RenderCreation, *}, window::*
+    diagnostic::LogDiagnosticsPlugin,
+    input::keyboard::{self, KeyboardInput},
+    prelude::*,
+    render::{settings::RenderCreation, *},
+    window::*,
 };
 
-use bevy_editor_pls::{controls::{self, EditorControls}, EditorPlugin};
+use bevy_editor_pls::{
+    controls::{self, EditorControls},
+    EditorPlugin,
+};
 // use crate::{
 //     animation::AnimationHandlerPlugin, camera::CameraHandlerPlugin, input::InputHandlerPlugin,
 //     player_controller::PlayerControllerPlugin, time::TimeScalarPlugin,
@@ -13,7 +20,7 @@ use camera::CameraHandlerPlugin;
 use input::InputHandlerPlugin;
 use player::PlayerPlugin;
 use time::TimeScalarPlugin;
-use user_settings::{DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH};
+use user_settings::{SettingsPlugin, DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH};
 use world_gen::WorldGenerationPlugin;
 
 mod camera;
@@ -21,17 +28,17 @@ mod collision_groups;
 mod input;
 mod macros;
 // mod world_generation;
+mod player;
+mod state_machines;
 mod time;
 mod user_settings;
 mod world_gen;
-mod player;
-mod state_machines;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, States)]
 enum AppState {
     #[default]
     Playing,
-    Editor
+    Editor,
 }
 
 fn main() {
@@ -63,6 +70,7 @@ fn main() {
             LogDiagnosticsPlugin::default(),
             RapierPhysicsPlugin::<NoUserData>::default(),
             // Internal Crates
+            SettingsPlugin,
             TimeScalarPlugin,
             EditorPlugin::default(),
             InputHandlerPlugin,
@@ -78,7 +86,6 @@ fn main() {
         .init_state::<AppState>()
         .run();
 }
-
 
 fn editor_controls() -> EditorControls {
     let mut editor_controls = EditorControls::default_bindings();
